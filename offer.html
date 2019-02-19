@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="css/icons-extra.css" />
+		<link href="css/hx.css" rel="stylesheet" />
+		<link href="css/offer.css" rel="stylesheet" />
+		<style>
+			/*css太多分开单独的文件*/
+		</style>
+
+	</head>
+
+	<body>
+		<div id="app" v-cloak>
+
+			<header class="mui-bar mui-bar-nav">
+				<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+				<h1 class="mui-title">委托兑换</h1>
+			</header>
+
+			<div class="mui-content">
+
+				<div class="select-top">
+
+					<select id="buyasset" class="buyasset" v-model="selectbuystring" @change="isuser = true">
+						<option value="0">购买币种</option>
+						<option :value="item.code+','+item.issuer" v-for="item in iaccount">{{item.code}}</option>
+					</select>
+					<span class="mui-icon"></span>
+					<select id="sellasset" class="buyasset" v-model="selectsellstring" @change="isuser = true">
+						<option value="0">支付币种</option>
+						<option :value="item.code+','+item.issuer" v-for="item in iaccount">{{item.code}}</option>
+					</select>
+				</div>
+
+				<div class="buyandsell" v-if="selectbuy && selectsell" v-cloak>
+					<section class="">
+						<div class="selectbtn">
+							<button type="button" class="mui-btn" v-bind:class="{btngreen:isbuy}" @tap="isbuy=true">买入</button>
+							<button type="button" class="mui-btn" v-bind:class="{btnred:!isbuy}" @tap="isbuy=false">卖出</button>
+						</div>
+
+						<div class="userinupt">
+							<h5>价格</h5>
+							<div class="mui-numbox" data-numbox-step='0.01'>
+								<button class="mui-btn mui-btn-numbox-minus" type="button">-</button>
+								<input class="mui-input-numbox" type="number" id="inputprice" v-model="inputprice" />
+								<button class="mui-btn mui-btn-numbox-plus" type="button">+</button>
+							</div>
+
+							<h5>数量</h5>
+							<div class="mui-numbox" data-numbox-step='0.01'>
+								<button class="mui-btn mui-btn-numbox-minus" type="button">-</button>
+								<input class="mui-input-numbox" type="number" id="inputnumber" v-model="inputnumber" />
+								<button class="mui-btn mui-btn-numbox-plus" type="button">+</button>
+							</div>
+
+							<label v-if="isbuy">可用 {{formatenum(sellbalance,2)}} {{selectsell.code}}</label>
+							<label v-if="isbuy">可买 {{buyable}} {{selectbuy.code}}</label>
+
+							<label v-if="!isbuy">可用 {{formatenum(buybalance,2)}} {{selectbuy.code}}</label>
+							<label v-if="!isbuy">可卖 {{!!sellable ? sellable : 0}} {{selectsell.code}}</label>
+
+							<button type="button" class="mui-btn" :class="isbuy ? 'btngreen' : 'btnred'" id="offerbtn">
+								<span v-if="isbuy">买入 {{selectbuy.code}}</span>
+								<span v-if="!isbuy">卖出 {{selectbuy.code}}</span>
+							</button>
+						</div>
+
+					</section>
+					<section class="pricelist" id="pricelist">
+						<div v-cloak>
+							<ul class="title">
+								<li><span>价格 {{selectsell.code}}</span><span>数量</span></li>
+							</ul>
+							<ul class="redprice">
+								<li v-for="(item,index) in comask" v-if='index<=5'><span>{{formatenum(item.price,4)}}</span><span>{{formatenum(item.amount,2)}}</span></li>
+							</ul>
+							<hr />
+							<ul class="greenprice">
+								<li v-for="(item,index) in pricelist.bids" v-if='index<=5'><span>{{formatenum(item.price,4)}}</span><span>{{formatenum(item.amount,2)}}</span></li>
+							</ul>
+						</div>
+						<div class="subwaiting"><span><img src="images/waiting2.gif" alt="正在载入" /></span></div>
+					</section>
+				</div>
+
+				<div class="offerlist" v-if="selectbuy && selectsell">
+					<h4>管理委托</h4>
+					<div v-if="comofferlist.length>0" v-cloak>
+						<ul id="listtitle">
+							<li>
+								<span></span>
+								<span>{{selectbuy.code}}</span>
+								<span>{{selectsell.code}}</span>
+								<span>价格</span>
+								<span>操作</span>
+							</li>
+						</ul>
+						<ul id="listul">
+							<li v-for="(item,index) in comofferlist">
+								<span :class="item.offerisbuy ? 'offergreen' : 'offerred'"><i>{{item.offerisbuy ? '买' : '卖'}}</i></span>
+								<span :class="item.offerisbuy ? 'green' : 'red'">{{item.offerisbuy ? item.sellamount : item.amount}}</span>
+								<span>{{item.offerisbuy ? item.amount : item.sellamount}}</span>
+								<span>{{item.offerisbuy ? formatenum((1/item.price),4) : item.price}}</span>
+								<span class="del"><button @tap="deloffer(item.id)" class="mui-icon mui-icon-closeempty"></button></span>
+							</li>
+						</ul>
+					</div>
+					<div v-else>
+						<h5>现在还没有委托</h5>
+					</div>
+					<div class="subwaiting"><span><img src="images/waiting2.gif" alt="正在载入" /></span></div>
+				</div>
+			</div>
+		</div>
+
+		<div class="waiting"><span><img src="images/waiting2.gif" alt="正在载入" />正在载入...</span></div>
+
+		<script src="libs/bower_components/stellar-sdk/stellar-sdk.js"></script>
+		<script src="js/gateways.js"></script>
+		<script src="js/jquery.js"></script>
+		<script src="js/template-web.js"></script>
+		<script src="js/mui.min.js"></script>
+		<script src="js/function.js"></script>
+		<script src="js/mui.enterfocus.js"></script>
+		<script src="js/vue.js"></script>
+		<script src="js/sjcl.js"></script>
+		<script src="js/hx.js"></script>
+		<script>
+			mui.init();
+
+			mui.plusReady(function() {
+				$.checkuser();
+
+				StellarSdk.Network.usePublicNetwork();
+				var server = new StellarSdk.Server($.apiaddress, {
+					allowHttp: true
+				});
+
+				var vm = new Vue({
+					el: '#app',
+					data: {
+						iaccount: {},
+						selectbuystring: "",
+						selectsellstring: "",
+						selectbuy: "", //* @param {Asset}
+						selectsell: "", //* @param {Asset}
+						isbuy: true,
+						pricelist: [],
+						inputprice: '', //输入的价格
+						inputnumber: '', //输入的数量
+						buybalance: '', //可买余额
+						sellbalance: '', //可卖余额
+						offerlist: [],
+						isuser : false//是否是用户行为
+					},
+					created: function() {
+						$("body").addClass("lock");
+						var ts = this;
+						$.iaccount.getbalance()
+							.then(function(x) {
+								$("body").removeClass("lock");
+								ts.iaccount = x;
+								
+								ts.selectbuystring = !$.getItem("selectbuystring") ? 0 : $.getItem("selectbuystring").toString();
+								ts.selectsellstring = !$.getItem("selectsellstring") ? 0 : $.getItem("selectsellstring").toString();
+								
+							})
+
+						
+						this.intervalfunction();
+						setInterval(this.intervalfunction, 5000);
+					},
+					mounted: function() {
+
+					},
+					methods: {
+						creatAsset: function(code, asset, type) {
+							if(type == 'native' || code == "XLM") {
+								return new StellarSdk.Asset.native();
+							} else {
+								return new StellarSdk.Asset(code, asset);
+							}
+						},
+						formatenum: function(n, m) {
+							return parseFloat(n).toFixed(m);
+						},
+						selectBuy: function() {
+							var ts = this;
+							if(!this.selectbuystring) return;
+							var el = this.selectbuystring.split(",");
+							if(this.selectbuystring != "0") {
+								this.selectbuy = this.creatAsset(el[0], el[1]);
+								this.buybalance = $.iaccount.getbalancebyasset(ts.selectbuy, ts.iaccount);
+								//console.log(JSON.stringify(ts.iaccount));
+							}
+						},
+						selectSell: function() {
+							var ts = this;
+							if(!this.selectsellstring) return;
+							var el = this.selectsellstring.split(",");
+							if(this.selectsellstring != "0") {
+								this.selectsell = this.creatAsset(el[0], el[1]);
+								this.sellbalance = $.iaccount.getbalancebyasset(ts.selectsell, ts.iaccount);
+							}
+						},
+						getpricelist: function() {
+							var ts = this;
+							if(!!ts.selectbuy && !!ts.selectsell) {
+								var server = new StellarSdk.Server($.apiaddress);
+								server.orderbook(this.selectbuy, this.selectsell)
+									.call()
+									.then(function(result) {
+										ts.pricelist = result;
+										//console.log(JSON.stringify(result));
+										ts.getaverage();
+									})
+									.catch(function(err) {
+										console.error(err);
+									});
+							}
+						},
+						getaverage: function(iscover) {
+							var upnum = this.pricelist.bids[0];
+							var downnum = this.pricelist.asks[0];
+							if(this.isuser || this.inputprice == 0 || this.inputprice == '') {
+								this.inputprice = (parseFloat(upnum.price) / 2 + parseFloat(downnum.price) / 2).toFixed(4);
+								this.isuser = false;
+								//console.log(this.inputprice);
+							}
+						},
+						getofferlist: function() {
+							var ts = this;
+							if(!!ts.selectbuy && !!ts.selectsell) {
+								$.get($.apiaddress + "/accounts/" + $.getsourcePublicKey() + "/offers?order=desc")
+									.then(function(offers) {
+										ts.offerlist = offers._embedded.records;
+									})
+									.catch(function(e) {
+										console.error(e);
+										ts.offerlist = [];
+									})
+							}
+						},
+						intervalfunction: function() {
+							this.getpricelist();
+							this.getofferlist();
+						},
+						deloffer: function(delid) {
+							if(!!delid) {
+								mui.confirm("确定要删除当前挂单？", "", ['否', '是'], function(e) {
+									if(e.index == 1) {
+										console.log("正在删除");
+										deloffersubmit(delid);
+									}
+								});
+							}
+						},
+						getofferbyid: function(id) {
+							var _data = {};
+							$.each(this.offerlist, function(index, value) {
+								if(value.id == id.toString()) {
+									_data = value;
+								}
+							});
+							return _data;
+						}
+					},
+					computed: {
+						buyable: function() {
+							if(this.sellbalance && this.inputprice) {
+								return this.formatenum(this.sellbalance / this.inputprice, 2);
+							} else {
+								return '--';
+							}
+						},
+						sellable: function() {
+							if(this.buybalance && this.inputprice) {
+								return this.formatenum(this.buybalance / this.inputprice, 2);
+							} else {
+								return '--';
+							}
+						},
+						comask: function(){
+							var _list = this.pricelist.asks;
+							if(_list)
+							{
+								return _list.slice(0,5).reverse();
+							}
+							
+						},
+						comofferlist: function() {
+							var ts = this;
+							var rlist = [];
+							$.each(this.offerlist, function(index, value) {
+								var _obj = {}
+								_obj.buying = value.buying.asset_type == "native" ? "XLM" : value.buying.asset_code;
+								_obj.selling = value.selling.asset_type == "native" ? "XLM" : value.selling.asset_code;
+								_obj.offerisbuy = true; //此条挂单是买还是卖
+
+								if(_obj.buying == ts.selectbuy.code && _obj.selling == ts.selectsell.code) {
+									_obj.offerisbuy = true;
+								} else if(_obj.selling == ts.selectbuy.code && _obj.buying == ts.selectsell.code) {
+									_obj.offerisbuy = false;
+								} else {
+									return true;
+								}
+
+								_obj.price = parseFloat(value.price).toFixed(4);
+								_obj.amount = parseFloat(value.amount).toFixed(2);
+								_obj.sellamount = (_obj.price * _obj.amount).toFixed(2);
+								_obj.id = value.id;
+
+								rlist.push(_obj);
+							});
+							return rlist;
+						}
+					},
+					watch: {
+						selectbuystring: {
+							handler: function(newValue, oldValue) {
+								this.selectBuy();
+								this.intervalfunction();
+							}
+						},
+						selectsellstring: {
+							handler: function(newValue, oldValue) {
+								this.selectSell();
+								this.intervalfunction();
+							}
+						}
+					}
+				});
+
+				$("body").on("tap", "#offerbtn", function() {
+					if(!!vm.inputprice && !!vm.inputnumber && !!vm.selectbuy && !!vm.selectsell) {
+						mui.confirm("确定要提交当前操作？", "", ['否', '是'], function(e) {
+							if(e.index == 1) {
+								console.log("正在提交");
+								submitoffer();
+							}
+						})
+					}
+				});
+
+				function submitoffer() {
+
+					var op = StellarSdk.Operation.createPassiveOffer({
+						selling: vm.isbuy ? vm.selectsell : vm.selectbuy, //* @param {Asset} opts.selling
+						buying: vm.isbuy ? vm.selectbuy : vm.selectsell, //* @param {Asset} opts.buying
+						//amount: vm.isbuy ? vm.inputnumber.toString() : (parseFloat(vm.inputnumber)/parseFloat(vm.inputprice)).toFixed(6).toString(),
+						amount: vm.isbuy ? (parseFloat(vm.inputnumber)*parseFloat(vm.inputprice)).toFixed(6).toString() : vm.inputnumber.toString(),
+						price: vm.isbuy ? (1 / parseFloat(vm.inputprice)).toFixed(6).toString() : vm.inputprice.toString() //* opts.price - The exchange rate ratio (selling / buying)
+					});
+					
+					$("body").addClass("lock");
+					server.loadAccount($.getsourcePublicKey()) //请求返回资产
+						.catch(function(e) {
+							console.error(e);
+							$("body").removeClass("lock");
+						})
+						.then(function(account) {
+							donext(account);
+						})
+
+					function donext(iaccount) {
+						var tx = new StellarSdk.TransactionBuilder(iaccount).addOperation(op).build();
+
+						var secretonekey = $.getsecretonekey();
+						//console.log(JSON.stringify(StellarSdk.Keypair.fromSecret(secretonekey)));
+						tx.sign(StellarSdk.Keypair.fromSecret(secretonekey));						
+						server.submitTransaction(tx)
+							.then(function(txResult) {
+								//console.log(JSON.stringify(txResult));
+								$("body").removeClass("lock");
+								mui.alert('提交成功', function() {
+									vm.inputnumber = "";
+									vm.intervalfunction();
+								});
+							})
+							.catch(function(e) {
+								console.error(e);
+								$("body").removeClass("lock");
+								mui.alert('提交失败，请稍后重试', '出错了~~', function() {});
+							});
+					}
+				}
+
+				function deloffersubmit(id) {
+					//console.log(id);
+					var deldata = vm.getofferbyid(id);
+					var selling = vm.creatAsset(deldata.selling.asset_code, deldata.selling.asset_issuer, deldata.selling.asset_type);
+					var buying = vm.creatAsset(deldata.buying.asset_code, deldata.buying.asset_issuer, deldata.buying.asset_type);
+
+					if(!!deldata) {
+						var op = StellarSdk.Operation.manageOffer({
+							selling: selling,
+							buying: buying,
+							amount: "0",
+							price: deldata.price,
+							offerId: id
+						});
+
+						$("body").addClass("lock");
+						server.loadAccount($.getsourcePublicKey()) //请求返回资产
+							.catch(function(e) {
+								$("body").removeClass("lock");
+								console.error(e);
+							})
+							.then(function(account) {
+
+								var tx = new StellarSdk.TransactionBuilder(account).addOperation(op).build();
+
+								var secretonekey = $.getsecretonekey();
+								//console.log(JSON.stringify(StellarSdk.Keypair.fromSecret(secretonekey)));
+								tx.sign(StellarSdk.Keypair.fromSecret(secretonekey));
+								
+								server.submitTransaction(tx)
+									.then(function(txResult) {
+										//console.log(JSON.stringify(txResult));
+										$("body").removeClass("lock");
+										mui.alert('已删除', function() {
+											vm.inputnumber = "";
+											vm.intervalfunction();
+										});
+									})
+									.catch(function(e) {
+										console.error(e);
+										$("body").removeClass("lock");
+										mui.alert('提交失败，请稍后重试', '出错了~~', function() {});
+									});
+
+							})
+
+					}
+				}
+
+				var old_back = mui.back; //返回时记住当前选择
+				mui.back = function() {
+					$.setItem("selectbuystring", vm.selectbuystring);
+					$.setItem("selectsellstring", vm.selectsellstring);
+					//console.log($.getItem("selectbuystring"));
+					old_back();
+				}
+
+			});
+		</script>
+	</body>
+
+</html>

@@ -1,0 +1,236 @@
+{
+  "addasset.html": {
+    "href": "addasset.html",
+    "resources": [
+      "css/mui.min.css",
+      "fonts/mui.ttf",
+      "css/icons-extra.css",
+      "fonts/mui-icons-extra.ttf",
+      "css/hx.css",
+      "libs/bower_components/stellar-sdk/stellar-sdk.js",
+      "libs/toml.min.js",
+      "js/gateways.js",
+      "js/jquery.js",
+      "js/template-web.js",
+      "js/mui.min.js",
+      "js/function.js",
+      "js/mui.enterfocus.js",
+      "js/sjcl.js",
+      "js/hx.js",
+      "images/waiting.svg"
+    ],
+    "refer": [
+      "price.html"
+    ],
+    "priority": 1
+  },
+  "setting.html": {
+    "href": "setting.html",
+    "resources": [
+      "css/icons-extra.css",
+      "fonts/mui-icons-extra.ttf",
+      "css/hx.css",
+      "libs/bower_components/stellar-sdk/stellar-sdk.js",
+      "js/gateways.js",
+      "js/jquery.js",
+      "js/template-web.js",
+      "js/function.js",
+      "js/mui.enterfocus.js",
+      "js/sjcl.js",
+      "js/hx.js"
+    ],
+    "refer": [
+      "price.html",
+      "setting.html"
+    ],
+    "priority": 6
+  },
+  "buy.html": {
+    "href": "buy.html",
+    "resources": [
+      "css/mui.min.css",
+      "fonts/mui.ttf",
+      "css/icons-extra.css",
+      "fonts/mui-icons-extra.ttf",
+      "css/hx.css",
+      "libs/bower_components/stellar-sdk/stellar-sdk.js",
+      "js/gateways.js",
+      "js/jquery.js",
+      "js/template-web.js",
+      "js/mui.min.js",
+      "js/function.js",
+      "js/mui.enterfocus.js",
+      "js/app.js",
+      "js/sjcl.js",
+      "js/hx.js",
+      "images/waiting.svg"
+    ],
+    "refer": [
+      "buy.html",
+      "setting.html"
+    ],
+    "priority": 3
+  },
+  "price.html": {
+    "href": "price.html",
+    "resources": [
+      "css/mui.min.css",
+      "fonts/mui.ttf",
+      "css/icons-extra.css",
+      "fonts/mui-icons-extra.ttf",
+      "css/hx.css",
+      "libs/bower_components/stellar-sdk/stellar-sdk.js",
+      "js/gateways.js",
+      "js/jquery.js",
+      "js/template-web.js",
+      "js/mui.min.js",
+      "js/function.js",
+      "js/mui.enterfocus.js",
+      "js/vue.js",
+      "js/hx.js"
+    ],
+    "refer": [
+      "price.html",
+      "setting.html"
+    ],
+    "priority": 1
+  },
+  "accountlist.html": {
+    "href": "accountlist.html",
+    "resources": [
+      "css/mui.min.css",
+      "fonts/mui.ttf",
+      "css/icons-extra.css",
+      "fonts/mui-icons-extra.ttf",
+      "css/hx.css",
+      "libs/bower_components/stellar-sdk/stellar-sdk.js",
+      "js/gateways.js",
+      "js/jquery.js",
+      "js/template-web.js",
+      "js/mui.min.js",
+      "js/function.js",
+      "js/mui.enterfocus.js",
+      "js/sjcl.js",
+      "js/hx.js"
+    ],
+    "refer": [
+      "accountlist.html"
+    ],
+    "priority": 1
+  },
+  "active.html": {
+    "href": "active.html",
+    "resources": [
+      "css/mui.min.css",
+      "fonts/mui.ttf",
+      "css/icons-extra.css",
+      "fonts/mui-icons-extra.ttf",
+      "css/hx.css",
+      "libs/bower_components/stellar-sdk/stellar-sdk.js",
+      "js/gateways.js",
+      "assets/coin.babelbank.com/BTC.png",
+      "assets/vcbear.net/JPY.png",
+      "assets/bitbox.one/usdt.png",
+      "assets/tempo.eu.com/EURT.png",
+      "assets/flutterwave.com/NGN.png",
+      "assets/cryptomover.com/cm3.png",
+      "assets/coin.babelbank.com/ETH.png",
+      "assets/vcbear.net/XRP.png",
+      "assets/bitbox.one/BCN.png",
+      "assets/cryptomover.com/cms.png",
+      "assets/bitcoinfundi.com/USD.png",
+      "assets/cryptomover.com/cmhkdt.png",
+      "assets/cryptomover.com/cm10.png",
+      "assets/bitcoinfundi.com/BTC.png",
+      "assets/vcbear.net/BTC.png",
+      "assets/bwow.io/usdt.png",
+      "assets/naobtc.com/BTC.png",
+      "assets/naobtc.com/XEL.png",
+      "assets/coin.babelbank.com/USDT.png",
+      "assets/coins.asia/PHP.png",
+      "assets/fchain.io/XCN.png",
+      "assets/cryptomover.com/cma.png",
+      "assets/ripplefox.com/CNY.png",
+      "js/jquery.js",
+      "js/template-web.js",
+      "js/mui.min.js",
+      "js/function.js",
+      "js/mui.enterfocus.js",
+      "js/sjcl.js",
+      "js/hx.js"
+    ],
+    "refer": [
+      "accountlist.html"
+    ],
+    "priority": 1
+  },
+  "lock.html": {
+    "href": "lock.html",
+    "resources": [
+      "css/mui.min.css",
+      "fonts/mui.ttf",
+      "libs/bower_components/stellar-sdk/stellar-sdk.js",
+      "js/jquery.js",
+      "js/mui.min.js",
+      "js/mui.locker.js",
+      "js/function.js",
+      "js/sjcl.js",
+      "js/hx.js"
+    ],
+    "refer": [],
+    "priority": 2
+  },
+  "keypair.html": {
+    "href": "keypair.html",
+    "resources": [
+      "css/mui.min.css",
+      "fonts/mui.ttf",
+      "css/hx.css",
+      "libs/bower_components/stellar-sdk/stellar-sdk.js",
+      "js/jquery.js",
+      "js/mui.min.js",
+      "js/function.js",
+      "js/hx.js"
+    ],
+    "refer": [],
+    "priority": 3
+  },
+  "setlock.html": {
+    "href": "setlock.html",
+    "resources": [
+      "css/mui.min.css",
+      "fonts/mui.ttf",
+      "libs/bower_components/stellar-sdk/stellar-sdk.js",
+      "js/jquery.js",
+      "js/mui.min.js",
+      "js/mui.locker.js",
+      "js/function.js",
+      "js/app.js",
+      "js/sjcl.js",
+      "js/hx.js"
+    ],
+    "refer": [
+      "login.html"
+    ],
+    "priority": 4
+  },
+  "login.html": {
+    "href": "login.html",
+    "resources": [
+      "css/hx.css",
+      "libs/bower_components/stellar-sdk/stellar-sdk.js",
+      "js/jquery.js",
+      "js/sjcl.js",
+      "js/function.js",
+      "js/hx.js",
+      "assets/bitbox.one/BCN.png",
+      "assets/bitbox.one/usdt.png",
+      "assets/XLM/XLM.png"
+    ],
+    "refer": [
+      "login.html",
+      "active.html"
+    ],
+    "priority": 0
+  }
+}

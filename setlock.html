@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<style>
+			html,
+			body {
+				background-color: #efeff4;
+				overflow: hidden;
+			}
+			
+			.mui-locker {
+				margin: 35px auto;
+			}
+			
+			#relogin {
+				display: block;
+				margin-top: 10px;
+				text-align: center;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">设置您的手势密码</h1>
+		</header>
+		<div class="mui-content">
+			<div class="mui-content-padded" style="margin: 10px 0px;">
+				<div class="mui-locker" data-locker-options='{"ringColor":"rgba(221,221,221,1)","fillColor":"#ffffff","pointColor":"rgba(0,136,204,1)","lineColor":"rgba(0,136,204,1)"}' data-locker-width='320' data-locker-height='320'>
+				</div>
+			</div>
+			<a id='relogin'>返回登录页面</a>
+		</div>
+
+		<div id="confirmhand" class="mui-popover mui-popover-action mui-popover-bottom">
+			<ul class="mui-table-view">
+				<li class="mui-table-view-cell">
+					<a id="yeshand">确定使用此手势</a>
+				</li>
+			</ul>
+			<ul class="mui-table-view">
+				<li class="mui-table-view-cell">
+					<a id="canclehand"><b>取消</b></a>
+				</li>
+			</ul>
+		</div>
+
+		<script src="libs/bower_components/stellar-sdk/stellar-sdk.js"></script>
+		<script src="js/jquery.js"></script>
+		<script src="js/mui.min.js"></script>
+		<script src="js/mui.locker.js"></script>
+		<script src="js/function.js"></script>
+		<script src="js/app.js"></script>
+		<script src="js/sjcl.js"></script>
+		<script src="js/hx.js"></script>
+
+		<script>
+			(function($, doc) {
+
+				$.init();
+
+				
+$.plusReady(function() {
+					var setkey = jQuery.getItem("$setkey");
+					if(!setkey) //如果没有密钥则返回
+					{
+						$.back();
+						return false;
+					}
+
+					var toAccountList = function() { //设置完成后的跳转方法
+						console.log("设置完成，跳转列表页");
+						plus.webview.open('main.html');
+						//plus.webview.open('accountlist.html');
+						/*mui.openWindow({
+							url: 'accountlist.html',
+							id : 'accountlist'
+						})*/
+					};
+
+					var toactive = function() { //设置跳转到激活页
+						plus.webview.open('active.html');
+						/*$.openWindow({
+								url: 'active.html',
+								id: 'active',
+								waiting: {
+									autoShow: true
+								}
+						})*/
+					};
+
+					var locker = doc.querySelector('.mui-locker');
+					var reloginbtn = doc.querySelector('#relogin');
+					var yeshand = doc.querySelector('#yeshand');
+					var canclehand = doc.querySelector('#canclehand');
+
+					var clearStateAndToLogin = function() {
+						plus.webview.open('login.html');
+						/*$.openWindow({
+							url: 'login.html',
+							id: 'login',
+							show: {
+								aniShow: 'pop-in'
+							},
+							waiting: {
+								autoShow: false
+							}
+						});*/
+					};
+
+					reloginbtn.addEventListener('tap', function() {
+						clearStateAndToLogin();
+					});
+
+					//document.addEventListener('plusready', function(){
+					locker.addEventListener('done', function(event) {
+						var rs = event.detail;
+						//console.log(rs);
+						if(rs.points.length < 3) {
+							rs.sender.clear();
+							return;
+						}
+
+						$('#confirmhand').popover('toggle');
+						calclefun(rs); //绑定点击取消
+						yesfun(rs); //绑定点击确定
+
+					});
+
+					var calclefun = function(rs) { //点击取消，清除手势
+						canclehand.addEventListener('tap', function() {
+							rs.sender.clear();
+							$('#confirmhand').popover('hide');
+						});
+					};
+					var yesfun = function(rs) { //点击确定操作
+						yeshand.addEventListener('tap', function() {
+
+							var secretonekey = sjcl.encrypt(rs.points.join(''), setkey);
+							jQuery.removeItem("$setkey");
+
+							jQuery.setItem("$secretonekey", secretonekey); //存密钥
+							jQuery.setItem("pointkey", rs.points.join('')); //存手势密码
+							$('#confirmhand').popover('hide');
+							rs.sender.clear();
+							var server = new StellarSdk.Server(jQuery.apiaddress);
+							plus.nativeUI.showWaiting("正在载入...");
+
+							server.loadAccount(jQuery.getsourcePublicKey()) //请求返回资产,存在资产则已激活					
+								.then(function(account) {
+									jQuery.setItem("isactive", "1"); //true表示已激活
+									//console.log(jQuery.getItem("isactive"));
+									toAccountList(); //跳转
+									var ws = plus.webview.currentWebview();
+									plus.webview.close(ws); //跳转后关闭本页
+									plus.nativeUI.closeWaiting();
+								})
+								.catch(function(e) { //发生错误跳转到未激活页
+									console.error(e);
+									jQuery.setItem("isactive", "0");
+									toactive();
+									var ws = plus.webview.currentWebview();
+									plus.webview.close(ws); //跳转后关闭本页
+									plus.nativeUI.closeWaiting();
+								});
+
+						});
+					};
+				});
+
+				//});
+			}(mui, document));
+		</script>
+	</body>
+
+</html>

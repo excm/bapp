@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html class="ui-page-accountlist">
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="css/icons-extra.css" />
+		<link href="css/hx.css" rel="stylesheet" />
+		<style>
+			.mui-bar-nav~.buycontent {
+				margin-top: 55px;
+			}
+			
+			.mui-input-group .mui-input-row.textarea-input {
+				height: auto;
+			}
+			
+			.searchdiv {
+				text-align: center;
+				padding: 15px;
+			}
+			
+			.inputwaiting {
+				background: url(images/waiting-small.svg);
+				background-size: 30px 30px;
+				background-repeat: no-repeat;
+				background-position: 0 5px;
+			}
+			
+			.inputwaiting {
+				color: transparent;
+			}
+		</style>
+
+	</head>
+
+	<body>
+		<div class="waiting"><span><img src="images/waiting2.gif" alt="正在载入" />正在载入...</span></div>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">内部转账</h1>
+		</header>
+
+		<div class="mui-input-group buycontent">
+			<div class="mui-input-row">
+				<label>币种选择</label>
+				<select name="targetprice" id="targetprice" class="inputwaiting">
+					<option value="0">请选择要转账的币种</option>
+				</select>
+			</div>
+			<div class="mui-input-row textarea-input">
+				<label>收款公钥</label>
+				<textarea id="transfertarget" style="height: 85px;" name="" placeholder="请把收款公钥粘贴在此处"></textarea>
+			</div>
+
+			<div class="mui-input-row">
+				<label>转款金额</label>
+				<input type="number" step="0.0000001" placeholder="请输入数字" id="transfernum">
+			</div>
+
+			<div class="mui-input-row textarea-input">
+				<label>备注</label>
+				<textarea id="memo" style="height: 85px;" name="" placeholder="此次转账的备注（可为空）"></textarea>
+			</div>
+
+			<div class="searchdiv">
+				<button class="mui-btn submitbtn" id="transferbtn">确定转账</button>
+			</div>
+
+		</div>
+
+		<script src="libs/bower_components/stellar-sdk/stellar-sdk.js"></script>
+		<script src="js/gateways.js"></script>
+		<script src="js/jquery.js"></script>
+		<script src="js/template-web.js"></script>
+		<script src="js/mui.min.js"></script>
+		<script src="js/function.js"></script>
+		<script src="js/mui.enterfocus.js"></script>
+		<script src="js/sjcl.js"></script>
+		<script src="js/vue.js"></script>
+		<script src="js/hx.js"></script>
+		<script>
+			mui.plusReady(function() {
+				//$.checkuser();
+
+				var ts = this;
+				$.iaccount.getbalance()
+					.then(function(x) {
+						$("#targetprice").removeClass("inputwaiting");
+						$.each(x, function(i, v) {
+							obj_option = "<option value='" + v.code + "," + v.issuer + "," + v.balance + "'>" + v.code + "<span> (" + v.website + ")</span>" + "</option>"
+							$("#targetprice").append(obj_option);
+						});
+					})
+
+				//function aaa(_obj, account) {
+
+				var transfertarget = "";
+				var transfernum = "";
+				var transfernum = "";
+
+				$("body").on("tap", "#transferbtn", function() {
+					transfertarget = $("#transfertarget").val();
+					transfernum = $("#transfernum").val();
+					targetprice = $("#targetprice").val().split(",");
+
+					if(!targetprice || targetprice[0] == "0") {
+						mui.alert("请选择币种~");
+						return false;
+					}
+					if(!transfertarget) {
+						mui.alert("收款公钥还没填写哦~");
+						return false;
+					}
+					if(!transfernum || transfernum == "0" || isNaN(transfernum)) {
+						mui.alert("请填写转款金额~");
+						return false;
+					}
+					if(parseFloat(transfernum) > parseFloat(targetprice[2])) {
+						mui.alert("您当前币种余额为 " + targetprice[2] + " ", "超出最大限额");
+						return false;
+					}
+
+					var btnArray = ['否', '是'];
+					mui.confirm('当前操作将转出 ' + transfernum + ' ' + targetprice[0], '确认提交此订单？', btnArray, function(ee) {
+						if(ee.index == 1) {
+							transfersubmit();
+						} else {
+							console.log("取消");
+
+						}
+					})
+				});
+
+				function transfersubmit() {
+					$("body").addClass("lock");
+					StellarSdk.Network.usePublicNetwork();
+					var server = new StellarSdk.Server($.apiaddress, {
+						allowHttp: true
+					});
+					var sourcePublicKey = $.getsourcePublicKey();
+					var sendasset = targetprice[0] == "native" ? new StellarSdk.Asset.native() : new StellarSdk.Asset(targetprice[0], targetprice[1]);
+					var op = StellarSdk.Operation.payment({
+						//MEMO_TEXT: $("#memo").val(),
+						destination: transfertarget.toString(),
+						asset: sendasset,
+						amount: transfernum.toString()
+					});
+
+					var _memo = new StellarSdk.Memo("text", $("#memo").val().toString());
+
+					server.loadAccount(sourcePublicKey) //请求返回资产
+						.catch(function(e) {
+							//console.log(JSON.stringify(e));
+							console.error(e);
+						})
+						.then(function(account) {
+							donext(account);
+							//console.log(JSON.stringify(account));
+						})
+
+					function donext(iaccount) {
+
+						//console.log(JSON.stringify(_memo));
+
+						var tx = new StellarSdk.TransactionBuilder(iaccount).addMemo(_memo).addOperation(op).build();
+
+						secretonekey = $.getsecretonekey();
+						tx.sign(StellarSdk.Keypair.fromSecret(secretonekey));
+
+						//console.log(JSON.stringify(tx));
+						
+						server.submitTransaction(tx)
+							.then(function(txResult) {
+								$("body").removeClass("lock");
+								mui.alert('转账成功', function() {
+									location.reload();
+								});
+							})
+							.catch(function(e) {
+								console.log(JSON.stringify(sendasset));
+								console.log(JSON.stringify(new StellarSdk.Asset.native()));
+
+								if(sendasset.code == "XLM") {
+									console.log("尝试激活账号...")
+									trycreataccount(); //转账为xlm且不成功时，尝试激活账号
+								} else {
+									$("body").removeClass("lock");
+									mui.alert('转账失败，请稍后重试！', '出错啦~~', function() {
+
+									});
+								}
+
+							});
+					}
+
+					function trycreataccount() {
+						
+						server.loadAccount(sourcePublicKey).then(function(iaccount){
+							
+						var op2 = StellarSdk.Operation.createAccount({
+							destination: transfertarget.toString(),
+							startingBalance: transfernum.toString()
+						});
+
+						var tx2 = new StellarSdk.TransactionBuilder(iaccount).addOperation(op2).build();
+
+						secretonekey = $.getsecretonekey();
+						tx2.sign(StellarSdk.Keypair.fromSecret(secretonekey));
+
+							server.submitTransaction(tx2)
+							.then(function(txResult) {
+								$("body").removeClass("lock");
+								mui.alert('转账并激活了对方账号', '操作成功', function() {});
+							}).catch(function(e) {
+								$("body").removeClass("lock");
+								mui.alert('转账失败，请稍后重试！', '出错啦~~', function() {});
+							});
+						})
+						
+
+					}
+
+				}
+				//}
+
+			});
+		</script>
+	</body>
+
+</html>

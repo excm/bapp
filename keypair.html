@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<link href="css/hx.css" rel="stylesheet" />
+	</head>
+
+	<body class="keypair">
+
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">创建新账号密码对</h1>
+		</header>
+
+		<div class="mui-content">
+			<div class="mui-content-padded">
+				<form method="post" name="myform">
+					<h5>恒星钱包由密码对组成，密码对包括两部分:</h5> 公钥(将为您的账户ID)：
+					<textarea readonly="readonly" name="publickey" class="textarea" id="hxkeyword" type="text" placeholder="公钥是账号，可以公开用于做身份ID或接收资产。"></textarea> 密钥(请保存好此密钥)：
+					<textarea readonly="readonly" name="secretkey" class="textarea" id="hxpassword" type="text" placeholder="密钥非常重要，必须保证此数字串的安全，拥有密钥就拥有账号的一切权限。如果丢失密钥，将有可能失去所有存放在钱包内的资产。"></textarea>
+					<input type="checkbox" id="check" onclick="confirmBox()" /> <label for="check">我接受使用条款，了解与加密货币相关的风险，并且知道BitBox不会签发或认可Stellar网络上的任何资产。</label>
+
+					<div class="mui-content-padded keypairbtn">
+						<button type="button" id="c" disabled="disabled">创建账户</button>
+						<button type="button" onclick="window.location.href='login.html'">密钥登录</button>
+					</div>
+
+					<hr/>
+					<h4>帐户生成安全说明(重要提示):</h4>
+					<p>
+						请妥善保管好您的密钥，此密钥只显示一次！<br/> 密钥非常重要，必须保证此数字串的安全，拥有密钥就拥有账号的一切权限。
+						<br/> 如果丢失密钥，将有可能失去所有存放在钱包内的资产。
+					</p>
+				</form>
+
+			</div>
+		</div>
+		<script src="libs/bower_components/stellar-sdk/stellar-sdk.js"></script>
+		<script src="js/jquery.js"></script>
+		<script src="js/mui.min.js"></script>
+		<script src="js/function.js"></script>
+		<script src="js/hx.js"></script>
+		<script type="text/javascript">
+			function confirmBox() {
+					var confirmBox = document.getElementById("check");
+					var submitBtn = document.getElementById("c");
+					if(confirmBox.checked) {
+						submitBtn.removeAttribute("disabled");
+					} else {
+						submitBtn.disabled = "true";
+					}
+				}
+			
+			$(function() {
+
+				
+
+				confirmBox();
+				$("#c").click(function() {
+					var keypair = StellarSdk.Keypair.random();
+					var publicaddress = keypair.publicKey();
+					var secretaddress = keypair.secret();
+					$("#hxkeyword").val(publicaddress);
+					$("#hxpassword").val(secretaddress);
+				});
+
+			});
+
+			mui.init();
+		</script>
+	</body>
+
+</html>

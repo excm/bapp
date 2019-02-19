@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html class="ui-page-login">
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<link href="css/hx.css" rel="stylesheet" />
+		<style>
+			.mui-content-padded {
+				margin-top: 25px;
+			}
+			
+			.mui-btn {
+				padding: 10px;
+			}
+			
+			.link-area {
+				text-align: center;
+				padding-top: 10px;
+			}
+		</style>
+
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-icon mui-icon-left-nav mui-pull-left" id="toreg"></a>
+			<h1 class="mui-title">bitbox.one 登录</h1>
+		</header>
+		<div class="mui-content">
+			<div class="mui-content-padded">使用密钥登录钱包
+				<form id='login-form' class="mui-input-group">
+					<div class="mui-input-row mui-password">
+						<input id="s" type="password" class="mui-input-password" style="padding-right: 40px;">
+					</div>
+				</form>
+			</div>
+
+			<div class="mui-content-padded">
+				<button id='login' class="mui-btn mui-btn-block mui-btn-primary">登录</button>
+				<div class="link-area">
+					<a id='reg' href="keypair.html">返回注册</a>
+				</div>
+			</div>
+			<div class="mui-content-padded oauth-area">
+
+			</div>
+		</div>
+		<script src="libs/bower_components/stellar-sdk/stellar-sdk.js"></script>
+		<script src="js/jquery.js"></script>
+		<script src="js/mui.min.js"></script>
+		<script src="js/sjcl.js"></script>
+		<script src="js/function.js"></script>
+		<script src="js/mui.enterfocus.js"></script>
+		<script src="js/hx.js"></script>
+		<script>
+			//				var a= sjcl.encrypt("1", "123456");
+			//				console.log("加密后：",a);
+			//				var b = sjcl.decrypt("1", a);
+			//				console.log("解密后：",b);
+
+			/*mui.init({
+				subpages: [{
+					url: "lock.html", //子页面HTML地址，支持本地地址和网络地址
+					id: "lock", //子页面标志
+					show:{ autoShow:false}
+				}]
+			});*/
+
+			mui.plusReady(function() {
+
+				$.setItem("showlock", "0");
+				//如果存在加密的密钥，则转到手势解锁页
+				if(!!$.getItem("$secretonekey")) {
+					mui.openWindow({
+						url: 'lock.html',
+						id: 'locklogin'
+					});
+				}
+
+				$("#login").click(function() {
+					secretonekey = $("#s").val();
+
+					if($.login(secretonekey)) {
+						$.setItem("$setkey", secretonekey); //用于把值传到下一页
+						$("#s").val("");
+						$.setItem("showlock", "1");
+						console.log("跳转设置页...");
+						mui.openWindow({
+							url: 'setlock.html',
+							id: 'setlock'
+						});
+						return false;
+					} else {
+						mui.alert('您的密钥有误，请检查后重新输入', '出错啦~', function() {
+							//关闭按钮后可执行操作
+						});
+						return false;
+					}
+
+				});
+
+				$("#toreg").click(function() {
+					mui.openWindow({
+						url: 'keypair.html',
+						id: 'keypair'
+					});
+				});
+
+				var backButtonPress = 0;
+				mui.back = function(event) {
+
+					var main = plus.android.runtimeMainActivity();
+					main.moveTaskToBack(false);
+
+					/*					backButtonPress++;
+										if(backButtonPress > 1) {
+											plus.runtime.quit();
+										} else {
+											plus.nativeUI.toast('再按一次退出应用');
+										}
+										setTimeout(function() {
+											backButtonPress = 0;
+										}, 1000);
+										return false;*/
+				};
+
+			});
+		</script>
+	</body>
+
+</html>

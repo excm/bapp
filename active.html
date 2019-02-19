@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html class="ui-page-accountlist">
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="css/icons-extra.css" />
+		<link href="css/hx.css" rel="stylesheet" />
+		<style>
+			body{ background: #fff;}
+			.mui-bar-nav~.mui-page-content{ margin-top: 51px;}
+			
+			.mui-content-padded {
+				padding-top: 15px;
+			}
+			.active-content{ line-height: 1.6em;}
+			#publickey{word-break:break-all; padding-bottom: 10px; line-height: 1.2em;}
+			h4{ margin-top: 25px;}
+		</style>
+
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-btn mui-btn-blue mui-btn-link mui-pull-left loginout" id="tologin">重新登录</a>
+			<button class="mui-btn mui-btn-blue mui-btn-link mui-pull-right reload">刷新</button>
+			
+			<h1 class="mui-title">帐号未激活</h1>
+		</header>
+		<div class="mui-page-content mui-content-padded">
+
+			<div class="active-content">
+				<div>您的钱包地址为：</div>
+				<div id="publickey"></div>
+				<div>转入<span class="red">3xlm</span>到您的钱包地址即可激活。</div>
+				<h4>可通过以下方法了解激活方法：</h4>
+				<ol>
+					<li>微信群：请添加微信xxx</li>
+					<li>QQ群：</li>
+					<li>电报群：</li>
+				</ol>
+			</div>
+
+		</div>
+
+
+
+		<script src="libs/bower_components/stellar-sdk/stellar-sdk.js"></script>
+		<script src="js/gateways.js"></script>
+		<script src="js/jquery.js"></script>
+		<script src="js/template-web.js"></script>
+		<script src="js/mui.min.js"></script>
+		<script src="js/function.js"></script>
+		<script src="js/mui.enterfocus.js"></script>
+		<script src="js/sjcl.js"></script>
+		<script src="js/hx.js"></script>
+		<script>
+			$(function() {
+				var server = new StellarSdk.Server($.apiaddress);
+				server.loadAccount($.getsourcePublicKey()) //请求返回资产,存在资产则已激活					
+							.then(function(account) {
+								$.setItem("isactive", "1"); //true表示已激活
+								toAccountList(); //跳转
+							})
+							.catch(function(e) { //发生错误表示未激活
+								console.error(e);
+							});
+				
+				
+				
+				$("#publickey").html($.getsourcePublicKey());
+				
+				
+				var toAccountList = function() { //设置激活后的跳转方法
+					mui.openWindow({
+						url: 'accountlist.html',
+						id: 'accountlist'
+					});
+				}
+				
+												
+
+			});
+			
+			mui.plusReady(function() {
+				var backButtonPress = 0;
+				$.back = function(event) {
+					backButtonPress++;
+					if(backButtonPress > 1) {
+						plus.runtime.quit();
+					} else {
+						plus.nativeUI.toast('再按一次退出应用');
+					}
+					setTimeout(function() {
+						backButtonPress = 0;
+					}, 1000);
+					return false;
+				};
+			});
+		</script>
+	</body>
+
+</html>

@@ -1,0 +1,138 @@
+
+body {
+	background: #fff;
+}
+
+.mui-content {
+	background: #fff;
+}
+.btngreen{
+	background: #228B22; color: #fff; border: 1px solid #228B22;
+}
+.green{
+	color: #228B22;
+}
+.btnred{
+	background: #CF2D28; color: #fff; border: 1px solid #CF2D28;
+}
+.red{
+	color: #CF2D28;
+}
+
+
+.select-top {
+	padding: 15px;
+	display: flex;
+}
+
+.select-top .mui-icon {
+	display: inline-block;
+	width: 40px;
+	height: 40px;
+	background: url(../images/jiantuo.svg) no-repeat center center;
+	background-size: contain;
+}
+
+.select-top select {
+	margin-bottom: 0;
+	border: 1px solid #aaaaaa;
+	background: #F7F7F8;
+	flex: 1;
+}
+
+.buyandsell{
+	display: flex; background: #f5f5f7;
+}
+
+.buyandsell section{
+	width: 50%;
+}
+.buyandsell section:nth-child(2){
+	border-left: 3px solid #ffffff;
+}
+
+.buyandsell .selectbtn{
+	display: flex; padding: 5px;
+}
+.buyandsell .selectbtn button{
+	margin: 5px; flex: 1;
+}
+
+.userinupt{
+	padding: 10px;
+}
+.mui-numbox{
+	display: flex; width: auto; margin-bottom: 10px;
+}
+.mui-numbox .mui-input-numbox{
+	flex: 1;
+}
+.userinupt label{
+	display: block; text-align: center; font-size: 14px;
+}
+
+#offerbtn{
+	margin: 10px auto; border-radius: 17px; display: block; width: 90%;
+}
+
+
+.pricelist{
+	padding: 10px; font-size: 12px; position: relative;
+}
+.pricelist ul{
+	padding: 0; margin: 0; list-style-type: none;
+}
+.pricelist ul li{
+	display: flex;
+}
+.pricelist ul li span{
+	flex: 1; text-align: left;
+}
+.pricelist ul li span:nth-child(2){
+	text-align: right;
+}
+
+.redprice li span:nth-child(1){
+	color: #CF2D28;
+}
+.greenprice li span:nth-child(1){
+	color: #228B22;
+}
+
+.offerlist{
+	position: relative;
+}
+.offerlist h4{
+	padding: 10px 15px; text-align: left;
+	border-bottom: 1px solid #ccc;
+}
+.offerlist h5{
+	padding: 15px; text-align: center;
+}
+.offerlist ul{
+	margin: 0; padding: 0; display: block;
+}
+
+.offerlist ul li{
+	display: flex; padding: 18px 0; border-bottom: 1px solid #ddd; font-size: 14px; line-height: 30px;
+}
+
+.offerlist ul#listtitle li{
+	padding: 11px 0;line-height: 30px;
+}
+.offerlist ul li span{
+	flex: 1; text-align: center; 
+}
+
+#listul li span i{
+	display: block; margin: 0 auto;
+	width: 30px;
+	height: 30px; line-height: 30px; font-style: normal; text-align: center; text-align: center; background: #228B22; border-radius: 50%; color: #fff;
+}
+#listul li span.offerred i{
+	background: #CF2D28;
+}
+
+#listul li span.del button{
+	font-size: 22px; display: block; height: 100%; margin: 0 auto;
+}

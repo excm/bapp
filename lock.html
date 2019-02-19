@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<style>
+			html,
+			body {
+				background-color: #efeff4;
+				overflow: hidden;
+			}
+			
+			.mui-locker {
+				margin: 35px auto;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<button class="mui-btn mui-btn-blue mui-btn-link mui-pull-right loginout" id='relogin'>重新登录</button>
+			<h1 class="mui-title">解锁您的应用</h1>
+		</header>
+		<div class="mui-content">
+			<div class="mui-content-padded" style="margin: 10px 0px;">
+				<div class="mui-locker" data-locker-options='{"ringColor":"rgba(221,221,221,1)","fillColor":"#ffffff","pointColor":"rgba(0,136,204,1)","lineColor":"rgba(0,136,204,1)"}' data-locker-width='320' data-locker-height='320'>
+				</div>
+			</div>
+		</div>
+
+		<script src="libs/bower_components/stellar-sdk/stellar-sdk.js"></script>
+		<script src="js/jquery.js"></script>
+		<script src="js/mui.min.js"></script>
+		<script src="js/mui.locker.js"></script>
+		<script src="js/function.js"></script>
+		<script src="js/sjcl.js"></script>
+		<script src="js/hx.js"></script>
+
+		<script>
+			mui.plusReady(function() {
+				mui.init();
+
+				var locker = document.querySelector('.mui-locker');
+				//var tryNumber = 7; //重试次数
+				if(!$.getItem("retrynum")){//设置重试次数
+					$.setItem("retrynum","5");
+				}
+				
+				
+				var rs;
+				locker.addEventListener('done', function(event) {
+					
+					rs = event.detail;
+					if(rs.points.length < 3) {
+						rs.sender.clear();
+						return;
+					}
+					plus.nativeUI.showWaiting();
+					var secretonekey = $.getsecretonekey(rs.points.join(''));
+					//console.log(JSON.stringify(secretonekey));
+					if($.login(secretonekey)) { //使用解密后的密钥登录，验证是否正确
+						$.setItem("pointkey", rs.points.join('')); //存手势密码
+						rs.sender.clear(); //清空
+
+						//console.log(plus.webview.currentWebview().id);
+						var ws=plus.webview.currentWebview();
+						//console.log(JSON.stringify(ws));
+						//console.log(ws.id);
+						if(ws.id == "locklogin")
+						{
+							//console.log(ws.id);
+							plus.webview.open('main.html');
+							/*mui.openWindow({
+								url: "accountlist.html",
+								id : "accountlist",
+								waiting: {
+									autoShow: true,
+									title: '正在加载...'
+								}
+							});	*/					
+						}
+						$.setItem("showlock","1");
+						$.setItem("retrynum","5");//登录成功重置重试次数
+						plus.nativeUI.closeWaiting();
+						plus.webview.close(ws);
+						
+						plus.nativeUI.closeWaiting();
+
+					} else {
+						var tryNumber = parseInt($.getItem("retrynum"));						
+						tryNumber--;
+						$.setItem("retrynum",tryNumber.toString());
+						if(tryNumber > 0) {
+							mui.toast('解锁手势错误，还能尝试 ' + tryNumber + ' 次。');
+						} else {
+							clearStateAndToLogin();
+						}
+						plus.nativeUI.closeWaiting();
+					}
+					
+					plus.nativeUI.closeWaiting();
+				});
+				/*				document.querySelector('#relogin').addEventListener('tap', function() {
+									clearStateAndToLogin();
+								});
+				*/
+				function clearStateAndToLogin() {
+					$.loginout();
+					if(rs) {
+						rs.sender.clear();
+					}
+					mui.openWindow({
+						url: 'login.html',
+						id: 'login'
+					});
+				}
+
+				var backButtonPress = 0;
+				mui.back = function(event) {
+					backButtonPress++;
+					if(backButtonPress > 1) {
+						plus.runtime.quit();
+					} else {
+						plus.nativeUI.toast('再按一次退出应用');
+					}
+					setTimeout(function() {
+						backButtonPress = 0;
+					}, 1000);
+					return false;
+				};
+			});
+		</script>
+	</body>
+
+</html>

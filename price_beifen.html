@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html class="ui-page-accountlist">
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="css/icons-extra.css" />
+		<link href="css/hx.css" rel="stylesheet" />
+		<style>
+			.mui-content-padded {
+				margin-top: 25px;
+			}
+			
+			h3.th {
+				padding: 15px 15px;
+				font-size: 18px;
+				text-align: center;
+				background: #fff;
+				margin: 0;
+				position: relative;
+			}
+			
+			h3.th span:nth-child(1):before {
+				content: "";
+				display: block;
+				width: 1px;
+				height: 20px;
+				background: #ccc;
+				float: right;
+				margin-top: 5px;
+			}
+			
+			h3.th:after {
+				content: "";
+				display: block;
+				clear: both;
+			}
+			
+			h3.th span {
+				display: block;
+				float: left;
+				line-height: 25px;
+			}
+			
+			h3.th span:nth-child(1) {
+				width: 70%;
+			}
+			
+			h3.th span:nth-child(2) {
+				width: 30%;
+			}
+			
+			.th~ul li {
+				display: flex;
+			}
+			
+			.th~ul li .zc {
+				width: 70%;
+				float: left;
+			}
+			
+			.th~ul li .price {
+				width: 30%;
+				float: right;
+				text-align: center;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				margin-right: -10px;
+			}
+			
+			.th~ul li .zc p {
+				font-size: 10px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				display: -webkit-box;
+				-webkit-box-orient: vertical;
+				-webkit-line-clamp: 2;
+			}
+			
+			.th~ul li .zc i {
+				font-style: normal;
+				font-size: 13px;
+			}
+			
+			.mui-bar-nav~.mui-content.addasset {
+				text-align: center;
+				margin-bottom: 75px;
+				padding-top: 25px;
+			}
+			
+			.addasset .mui-btn {
+				margin: 0 auto;
+				padding: 15px 25px;
+			}
+			
+			.mui-switch {
+				touch-action: none;
+			}
+		</style>
+
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<button class="mui-btn mui-btn-blue mui-btn-link mui-pull-right reload">刷新</button>
+			<h1 class="mui-title">bitbox.one 价格</h1>
+		</header>
+
+		<div class="mui-content">
+			<h3 class="th"><span>资产</span><span>价格</span></h3>
+			<ul class="mui-table-view" id="pricelist">
+				<li class="waiting"></li>
+			</ul>
+		</div>
+
+		<div class="mui-content addasset">
+			<a _href="addasset.html" class="mui-btn">添加资产</a>
+		</div>
+
+		<nav class="footmenu">
+			<a class="active" _href="price.html">
+				<span class="mui-icon mui-icon-extra mui-icon-extra-calc"></span>
+				<span class="mui-tab-label">价格</span>
+			</a>
+			<a _href="buy.html">
+				<span class="mui-icon mui-icon-extra mui-icon-extra-gold"></span>
+				<span class="mui-tab-label">兑换</span>
+			</a>
+			<a _href="accountlist.html">
+				<span class="mui-icon mui-icon-extra mui-icon-extra-prech"></span>
+				<span class="mui-tab-label">钱包</span>
+			</a>
+			<a _href="setting.html">
+				<span class="mui-icon mui-icon-extra mui-icon-extra-dictionary"></span>
+				<span class="mui-tab-label">设置</span>
+			</a>
+		</nav>
+
+		<script id="priceTemplate" type="text/x-jquery-tmpl">
+			<li class="mui-table-view-cell">
+				<div class="zc">
+					<img class="mui-media-object mui-pull-left" src="{{image}}">
+					<div class="mui-media-body">
+						{{code}} <i>{{website}}</i>
+						<p>{{issuer}}</p>
+					</div>
+				</div>
+				<div class="price">{{price}}</div>
+			</li>
+		</script>
+
+		<script src="libs/bower_components/stellar-sdk/stellar-sdk.js"></script>
+		<script src="js/gateways.js"></script>
+		<script src="js/jquery.js"></script>
+		<script src="js/template-web.js"></script>
+		<script src="js/mui.min.js"></script>
+		<script src="js/function.js"></script>
+		<script src="js/mui.enterfocus.js"></script>
+		<script src="js/vue.js"></script>
+		<script src="js/hx.js"></script>
+		<script>
+			$(function() {
+				
+				$.checkuser();
+
+				$.iaccount.pricelist.get(aaa);
+
+				function aaa(_obj) {
+					if(_obj) {
+						$.each(_obj.data, function(i, v) {
+							var html = template('priceTemplate', v);
+							$('#pricelist').append(html);
+						});
+						console.log(_obj);
+					}
+				}
+
+				window.addEventListener('refresh', function(e) { //执行刷新
+					location.reload();
+				});
+				//				server.loadAccount(sourcePublicKey) //请求返回资产
+				//					.catch(function(e) {
+				//						console.error(e);
+				//					})
+				//					.then(function(account) {
+				//						console.log(account);
+				//						$(".waiting").remove();
+				//
+				//						//将返回的数组排序
+				//						var balances_arr = account.balances;
+				//						balances_arr = balances_arr.sort(compare('asset_code')); //先按首字母排序
+				//						var native_pos = balances_arr.findIndex(function(t) {
+				//							if(t.asset_type){return t.asset_type == "native";}
+				//						});
+				//						console.log(native_pos);
+				//						var str = balances_arr.splice(native_pos, 1);
+				//						balances_arr.unshift(str[0]);
+				//						//找到native的index，删除，再在数组开头插入，balances_arr为排序后的值
+				//						
+				//
+				//						$.each(balances_arr, function(index, value) { //循环请求，返回每一项资产的价格
+				//							console.log(value);
+				//							if(value.asset_type == "native") {
+				//
+				//							} else {
+				//								server.orderbook(new StellarSdk.Asset.native(), new StellarSdk.Asset(value.asset_code, value.asset_issuer))
+				//									.call()
+				//									.then(function(resp) {
+				//										console.log(resp);
+				//										aveprice = (parseFloat(resp.asks[0].price)/2+parseFloat(resp.bids[0].price)/2).toFixed(7);
+				//										
+				//										obj_source = gateways.getSourceById(value.asset_issuer);//从gateways.js获取图标和域名信息
+				//										console.log(obj_source);
+				//										
+				//										obj_price = {};										
+				//										obj_price.asset_code = value.asset_code;
+				//										obj_price.price = aveprice
+				//										obj_price.asset_issuer = value.asset_issuer;
+				//										obj_price.imgsrc = obj_source.logo;
+				//										obj_price.website = obj_source.name;
+				//										
+				//										var html = template('priceTemplate', obj_price);
+				//										$('#pricelist').append(html);
+				//										
+				//										
+				//									})
+				//									.catch(function(err) {
+				//										console.log(err);
+				//									})
+				//							}
+				//						});
+				//
+				//					});
+
+				//test
+
+			});
+		</script>
+	</body>
+
+</html>

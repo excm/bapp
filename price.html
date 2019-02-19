@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html class="ui-page-accountlist">
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="css/icons-extra.css" />
+		<link href="css/hx.css" rel="stylesheet" />
+		<style>
+			.mui-content-padded {
+				margin-top: 25px;
+			}
+			
+			h3.th {
+				padding: 15px 15px;
+				font-size: 18px;
+				text-align: center;
+				background: #fff;
+				margin: 0;
+				position: relative;
+			}
+			
+			h3.th span:nth-child(1):before {
+				content: "";
+				display: block;
+				width: 1px;
+				height: 20px;
+				background: #ccc;
+				float: right;
+				margin-top: 5px;
+			}
+			
+			h3.th:after {
+				content: "";
+				display: block;
+				clear: both;
+			}
+			
+			h3.th span {
+				display: block;
+				float: left;
+				line-height: 25px;
+			}
+			
+			h3.th span:nth-child(1) {
+				width: 70%;
+			}
+			
+			h3.th span:nth-child(2) {
+				width: 30%;
+			}
+			
+			.th~ul li {
+				display: flex;
+			}
+			
+			.th~ul li .zc {
+				width: 70%;
+				float: left;
+			}
+			
+			.th~ul li .price {
+				width: 30%;
+				float: right;
+				text-align: center;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				margin-right: -10px;
+			}
+			
+			.th~ul li .zc p {
+				font-size: 10px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				display: -webkit-box;
+				-webkit-box-orient: vertical;
+				-webkit-line-clamp: 2;
+			}
+			
+			.th~ul li .zc i {
+				font-style: normal;
+				font-size: 13px;
+			}
+			
+			.mui-content.addasset {
+				text-align: center;
+				margin-bottom: 25px;
+				padding-top: 25px;
+			}
+			
+			.addasset .mui-btn {
+				/*margin: 0 auto;
+				padding: 15px 25px;*/
+			}
+			
+			.mui-switch {
+				touch-action: none;
+			}
+			
+			[v-cloak] {
+				display: none;
+			}
+		</style>
+
+	</head>
+
+	<body>
+
+		<div id="app" v-cloak>
+			<div class="mui-content">
+				<h3 class="th"><span>货币</span><span>价格</span></h3>
+				<ul class="mui-table-view" id="pricelist">
+					<li class="mui-table-view-cell" v-for="item in alldata">
+						<div class="zc">
+							<img class="mui-media-object mui-pull-left" :src="item.image">
+							<div class="mui-media-body">
+								{{item.code}} <i>{{item.website}}</i>
+								<p>{{item.issuer}}</p>
+							</div>
+						</div>
+						<div class="price">{{item.price}}</div>
+					</li>
+				</ul>
+			</div>
+
+			<div class="mui-content addasset">
+				<a _href="addasset.html" class="mui-btn submitbtn">添加资产</a>
+			</div>
+		</div>
+
+		<div class="waiting"><span><img src="images/waiting2.gif" alt="正在载入" />正在载入...</span></div>
+
+		<script src="libs/bower_components/stellar-sdk/stellar-sdk.js"></script>
+		<script src="js/gateways.js"></script>
+		<script src="js/jquery.js"></script>
+		<script src="js/template-web.js"></script>
+		<script src="js/mui.min.js"></script>
+		<script src="js/function.js"></script>
+		<script src="js/mui.enterfocus.js"></script>
+		<script src="js/vue.js"></script>
+		<script src="js/hx.js"></script>
+		<script>
+			var timer;
+			var path_arr = [{
+				'from': new StellarSdk.Asset('SDA', 'GBOXNWGBB7SG3NVIA7O25M7JIRSXQ4KKU3GYARJEFMQXSR3APF3KRI6S'),
+				'path': new StellarSdk.Asset('BCNY', 'GBCNYBHAAPDSU3UIHXXQTHYZVSBJBI4YUNWXMKJBCPDHTVYR75G6NFHD')
+			}, {
+				'from': new StellarSdk.Asset('XRP', 'GBOXNWGBB7SG3NVIA7O25M7JIRSXQ4KKU3GYARJEFMQXSR3APF3KRI6S'),
+				'path': new StellarSdk.Asset('USDT', 'GBOXNWGBB7SG3NVIA7O25M7JIRSXQ4KKU3GYARJEFMQXSR3APF3KRI6S')
+			}]
+
+			mui.plusReady(function() {
+
+				//var nw = plus.webview.currentWebview();				
+				window.addEventListener('startInterval', function(e) {
+					vm.getdata();
+					clearInterval(timer);
+					timer = setInterval(vm.getdata, 9000);
+					console.log('Webview price startInterval');
+				}, false);
+
+				window.addEventListener('endInterval', function(e) {
+					clearInterval(timer);
+					console.log('Webview price endInterval');
+				}, false);
+
+				var vm = new Vue({
+					el: '#app',
+					data: {
+						alldata: {},
+						getindex: 1 //第几次获取数据
+					},
+					created: function() {
+						var ts = this;
+						$("body").addClass("lock");
+						ts.getdata(true); //第一次获取时为true
+						//timer = setInterval(this.getdata, 9000);					
+					},
+					methods: {
+						getdata: function(numfirst) {
+							//if($.timecheck()) return true; //加入时间间隔防止webview show有时会重复触发多次
+
+							console.log("尝试获取数据...");
+							var ts = this;
+							$.when($.iaccount.getbalance()).then(function(balancelist) {
+									$("body").removeClass("lock");
+
+									var _arr = [];
+									$.each(balancelist, function(index, value) {
+										var _obj = value;
+										if(numfirst == true && !value.price) { //第一次默认为0，后面读取旧数据，再ajax更新数据防止跳动
+											_obj.price = 0;
+										} else if(value.code == "XLM") {
+											_obj.price = "1.0000000";
+										} else {
+											try { //这里用try，因为增加或删除资产后造成index改变，先让它为0等待ajax回传的price
+												_obj.price = ts.alldata[index].price;
+											} catch(e) {
+												_obj.price = 0;
+											}
+										}
+										_arr.push(value);
+
+										if(value.code == "XLM") return true;
+
+										var ispath = false;//是否需要从路径转换价格
+										$.each(path_arr, function(i, v) {
+											if(v.from.code == value.code && v.from.issuer == value.issuer) {
+												//console.log(value.code);
+												$.iaccount.pathprice(value.code, value.issuer, v.path)
+												.then(function(x){
+													ts.$set(ts.alldata[index], 'price', x);
+												})
+												
+												ispath = true;
+											}
+										})
+
+										if(!ispath) {
+											$.iaccount.getprice(value.code, value.issuer).then(function(x) {
+												//console.log(JSON.stringify(x));
+												ts.$set(ts.alldata[index], 'price', x);
+											});
+										}
+
+									});
+
+									ts.alldata = _arr;
+								})
+								.catch(function(e) {
+									$("body").removeClass("lock");
+									console.log(JSON.stringify(e));
+								})
+						}
+					}
+				})
+
+			});
+		</script>
+	</body>
+
+</html>

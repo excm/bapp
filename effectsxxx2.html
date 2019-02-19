@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html class="ui-page-accountlist">
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="css/icons-extra.css" />
+		<link href="css/hx.css" rel="stylesheet" />
+		<style>
+			#app .mui-content {
+				margin-top: 0;
+				padding-top: 0;
+			}
+			
+			#effectslist .mui-table-view-chevron {
+				margin-top: 55px;
+			}
+			
+			.accountinput {
+				width: 100%;
+				height: 45px;
+				padding: 0;
+				color: #999;
+				border: 0;
+				font-size: 15px;
+				margin-bottom: 0;
+			}
+			
+			.accountp {
+				font-size: 18px;
+				text-align: center;
+			}
+			
+			.accountp .receive {
+				color: #228B22;
+			}
+			
+			.accountp .send {
+				color: #CF2D28;
+			}
+			
+			.accountp .buy {
+				color: #4682B4;
+				font-size: 15px;
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<div id="app" v-cloak>
+			<div class="waiting"><span><img src="images/waiting2.gif" alt="正在载入" />正在载入...</span></div>
+
+			<header class="mui-bar mui-bar-nav">
+				<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+				<h1 class="mui-title">账单</h1>
+			</header>
+
+			<div class="mui-content">
+
+				<div class="effectslist mui-scroll-wrapper" id="effectslist">
+					<div class="mui-scroll">
+						<div class="mui-table-view-chevron">
+							<div class="mui-card " v-for="item in reversedalldata">
+								<div class="mui-card-header"><span v-if="!!item.created_at">{{item.created_at}}</span> <span>{{item.operation}}</span></div>
+								<div class="mui-card-content" v-if="item.type=='payment'">
+									<div class="mui-card-content-inner">
+										<textarea readonly="readonly" class="accountinput">{{item.targetid}}</textarea>
+										<div class="accountp">
+											<span :class="item.issend=='1' ? 'send' : 'receive'">
+												<span>{{item.amount}} {{item.asset_code}}</span>
+											</span>
+										</div>
+									</div>
+								</div>
+								<div class="mui-card-content" v-if="item.type=='path_payment'">
+									<div class="mui-card-content-inner">
+										<div class="accountp">
+											<span class="buy">
+												<span>
+													{{item.source_max}} {{item.source_asset_code}} 
+													<span class="mui-icon mui-icon-arrowthinright"></span> {{item.amount}} {{item.asset_code}}
+											</span>
+											</span>
+										</div>
+									</div>
+								</div>
+								<div class="mui-card-content" v-if="item.type=='create_passive_offer'">
+									<div class="mui-card-content-inner">
+										<div class="accountp">
+											<span class="buy">
+												<span>
+													{{formatenum(item.amount*item.price,3)}} {{item.selling_asset_code}} 
+													<span class="mui-icon mui-icon-arrowthinright"></span> {{formatenum(item.amount,3)}} {{item.buying_asset_code}} <span class="red">({{item.price}})</span>
+											</span>
+											</span>
+										</div>
+									</div>
+								</div>
+								<div class="mui-card-footer" v-show="!!getmemobyhash(item.transaction_hash) && getmemobyhash(item.transaction_hash)!='无'">
+									备注：{{getmemobyhash(item.transaction_hash)}}
+								</div>
+								<!--<div class="mui-card-footer">页脚</div>-->
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+
+		</div>
+		<script src="libs/bower_components/stellar-sdk/stellar-sdk.js"></script>
+		<script src="js/gateways.js"></script>
+		<script src="js/jquery.js"></script>
+		<script src="js/template-web.js"></script>
+		<script src="js/mui.min.js"></script>
+		<script src="js/function.js"></script>
+		<script src="js/mui.enterfocus.js"></script>
+		<script src="js/sjcl.js"></script>
+		<script src="js/vue.js"></script>
+		<script src="js/hx.js"></script>
+		<script>
+			mui.plusReady(function() {
+				$.checkuser();
+
+				var vm = new Vue({
+					el: '#app',
+					data: {
+						alldata: [],
+						nexturl: "",
+						oldnexturl: ""
+					},
+					created: function() {
+						this.getfirstpage(function() {});
+					},
+					methods: {
+						getfirstpage: function(callback) {
+							var ts = this;
+							$.get($.apiaddress + "/accounts/" + $.getsourcePublicKey() + "/operations?limit=20&order=desc").then(function(effectResults) {
+								console.log(JSON.stringify(effectResults));
+								ts.alldata = effectResults._embedded.records;
+								ts.nexturl = effectResults._links.next.href;
+								ts.oldnexturl = "";
+								callback(true);
+							});
+						},
+						formatenum: function(n, m) {
+							return parseFloat(n).toFixed(m);
+						},
+						translatetype: function(word) {
+							if(word == "payment") return "转账";
+							if(word == "path_payment") return "兑换";
+							if(word == "change_trust") return "更改信任";
+							if(word == "create_passive_offer") return "委托兑换";
+							return word;
+						},
+						translatetime: function(creattime) {
+							var t = new Date(creattime).getTime();
+							var targetDate = new Date(t);
+							return targetDate.Format("yyyy-MM-dd hh:mm:ss");
+						},
+						getnextpage: function(callback) {
+							var ts = this;
+							//debugger;
+							if(ts.nexturl && ts.nexturl != ts.oldnexturl) {
+								ts.oldnexturl = ts.nexturl;
+								plus.nativeUI.showWaiting("等待中....", {
+									padlock: true
+								});
+								$.get(ts.nexturl)
+									.then(function(effectResults) {
+										console.log(JSON.stringify(effectResults));
+										var recordsdata = effectResults._embedded.records;
+
+										if(recordsdata && recordsdata.length > 0) {
+											$.each(effectResults._embedded.records, function(index, value) {
+												if(value.type != "payment" && value.type != "path_payment") {
+													return true;
+												}
+												ts.alldata.push(value);
+											});
+											ts.nexturl = effectResults._links.next.href;
+											callback(true);
+										} else {
+											callback(false);
+										}
+										//console.log(ts.nexturl);
+										//console.log(ts.oldnexturl);
+									})
+									.catch(function() {
+										callback(false);
+									})
+									.done(function() {
+										plus.nativeUI.closeWaiting();
+									})
+							} else {
+								callback(false);
+							}
+
+						},
+						getmemobyhash: function(hashid) {
+							var memo = "";
+							var targetmemo = $.objItem.getobjItem(hashid);
+							if(!!targetmemo) { //从本地取备注信息，本地没有才请求网络，以加快加载速度
+								memo = targetmemo;
+								//console.log("从本地取到的数据");
+								return memo;
+							} else {
+								$.get("https://horizon.stellar.org/transactions/" + hashid) //程获取备注
+									.catch(function() {
+										memo = "无";
+									})
+									.then(function(result) {
+										var _hash = result.hash;
+										var _memo = result.memo;
+										var _storedata = "";
+										if(_memo) {
+											_storedata = _memo;
+										} else {
+											_storedata = "无";
+										}
+
+										$.objItem.setobjItem(_hash, _storedata);
+										//console.log(JSON.stringify($.objItem.getobjItem(_hash)));
+										memo = _memo;
+									})
+									.done(function() {
+										return memo;
+									});
+								//console.log("从网络取到的数据");
+							}
+						}
+					},
+					computed: {
+						reversedalldata: function() { //提取用来显示的数据
+							var _data = [];
+							var ts = this;
+
+									$.each(ts.alldata, function(index, value) {
+
+										if(value.type != "payment" && value.type != "path_payment" && value.type != "create_passive_offer") {
+											return true;
+										}
+										var _obj = {};
+										_obj.created_at = ts.translatetime(value.created_at);
+										_obj.type = value.type;
+										_obj.operation = ts.translatetype(value.type);
+										_obj.targetid = ""; //目标账户
+										_obj.issend = '-1';
+										_obj.amount = value.amount;
+										if(value.type == "payment") {
+											if(value.from == $.getsourcePublicKey()) {
+												_obj.targetid = value.to;
+												_obj.issend = '1';
+												_obj.amount = " - " + value.amount;
+											} else if(value.to == $.getsourcePublicKey()) {
+												_obj.targetid = value.from;
+												_obj.issend = '0';
+												_obj.amount = " + " + value.amount;
+											}
+										}
+										_obj.asset_code = value.asset_type == 'native' ? 'XLM' : value.asset_code;
+										_obj.source_max = value.source_max;
+										_obj.source_asset_type = value.source_asset_type;
+										_obj.source_asset_code = value.source_asset_type == 'native' ? 'XLM' : value.source_asset_code;
+										//_obj.source_asset_issuer = value.source_asset_issuer;
+										_obj.transaction_hash = value.transaction_hash;
+										
+										///委托
+										_obj.selling_asset_code = value.selling_asset_type == 'native' ? 'XLM' : value.selling_asset_code;
+										_obj.buying_asset_code = value.buying_asset_type == 'native' ? 'XLM' : value.buying_asset_code;
+										_obj.price = value.price;
+
+										_data.push(_obj);
+									});
+							
+							return _data;
+							//console.log(JSON.stringify(plus.storage));
+							//console.log($.objItem.getobjItem("fff"));
+
+						}
+					}
+				});
+
+				mui.init({
+					pullRefresh: {
+						container: '#effectslist',
+						up: {
+							//height: 50, //可选.默认50.触发上拉加载拖动距离
+							auto: false, //可选,自动上拉加载一次,默认false.
+							contentrefresh: "正在加载中...", //可选，正在加载状态时，上拉加载控件上显示的标题内容
+							contentnomore: '没有更多数据了', //可选，请求完毕若没有更多数据时显示的提醒内容；
+							callback: pullgetdata //必选，刷新函数，根据具体业务来编写，比如通过ajax从服务器获取新数据；
+						},
+						down: {
+							height: 50, //可选,默认50.触发下拉刷新拖动距离,
+							auto: true, //可选,默认false.首次加载自动下拉刷新一次
+							contentdown: "下拉可以刷新", //可选，在下拉可刷新状态时，下拉刷新控件上显示的标题内容
+							contentover: "释放立即刷新", //可选，在释放可刷新状态时，下拉刷新控件上显示的标题内容
+							contentrefresh: "正在刷新...", //可选，正在刷新状态时，下拉刷新控件上显示的标题内容
+							callback: pullgetfirstdata //必选，刷新函数，根据具体业务来编写，比如通过ajax从服务器获取新数据；
+						}
+					}
+				});
+
+				function pullgetfirstdata() {
+					//console.log("触发下拉事件");
+					var ts = this;
+					vm.getfirstpage(function() {
+						ts.endPulldownToRefresh(true);
+						mui('#effectslist').pullRefresh().enablePullupToRefresh(); //下拉刷新完成后要重新启用上拉加载
+						//mui('#effectslist').pullRefresh().endPulldown();
+					});
+				}
+
+				function pullgetdata() {
+					//console.log("触发上拉事件");
+					var ts = this;
+					vm.getnextpage(function(e) {
+						if(e) {
+							ts.endPullupToRefresh(false);
+						} else {
+							ts.endPullupToRefresh(true);
+						}
+					});
+				}
+
+			});
+		</script>
+	</body>
+
+</html>

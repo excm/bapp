@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html class="ui-page-accountlist">
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="css/icons-extra.css" />
+		<link href="css/hx.css" rel="stylesheet" />
+		<style>
+			.mui-content-padded {
+				margin-top: 25px;
+			}
+			/*			.first-card {
+				margin-top: 55px;
+			}*/
+			
+			#publickey,
+			#skey {
+				width: 100%;
+				height: 80px;
+			}
+			
+			h3.th {
+				padding: 15px 15px;
+				font-size: 18px;
+				text-align: center;
+				background: #fff;
+				margin: 0;
+				position: relative;
+			}
+			
+			h3.th span:nth-child(1):before {
+				content: "";
+				display: block;
+				width: 1px;
+				height: 20px;
+				background: #ccc;
+				float: right;
+				margin-top: 5px;
+			}
+			
+			h3.th:after {
+				content: "";
+				display: block;
+				clear: both;
+			}
+			
+			h3.th span {
+				display: block;
+				float: left;
+				line-height: 25px;
+			}
+			
+			h3.th span:nth-child(1) {
+				width: 70%;
+			}
+			
+			h3.th span:nth-child(2) {
+				width: 30%;
+			}
+			
+			.th~ul li {
+				display: flex;
+			}
+			
+			.th~ul li .zc {
+				width: 70%;
+				float: left;
+			}
+			
+			.th~ul li .price {
+				width: 30%;
+				float: right;
+				text-align: center;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				margin-right: -10px;
+			}
+			
+			.th~ul li .zc p {
+				font-size: 10px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				display: -webkit-box;
+				-webkit-box-orient: vertical;
+				-webkit-line-clamp: 2;
+			}
+			
+			.th~ul li .zc i {
+				font-style: normal;
+				font-size: 13px;
+			}
+			
+			.mui-bar-nav~.mui-page-content.quit {
+				margin-top: 10px;
+			}
+			
+			.updatetip {
+				display: none;
+			}
+			
+			.updateable .updatetip {
+				display: inline-block;
+			}
+			
+			.updateable .chk {
+				display: none;
+			}
+		</style>
+
+	</head>
+
+	<body>
+		<!--		<header class="mui-bar mui-bar-nav">
+			<h1 class="mui-title">设置</h1>
+		</header>-->
+
+		<div class="mui-card-content first-card">
+			<div class="mui-card-content-inner">
+				<p>当前帐户公钥为：</p>
+				<textarea type="text" id="publickey" name="publickey" readonly="readonly">0</textarea>
+				<p>客户端版本号：<span id="version"> </span> <span class="updatetip red">当前有新版本！</span></p>
+				<button type="button" class="mui-btn updatetip" id="checkupdate">点击更新</button>
+			</div>
+		</div>
+
+		<div class="mui-page-content quit">
+
+			<ul class="mui-table-view">
+				<li class="mui-table-view-cell" style="text-align: center;">
+					<a id='relogin' class="loginout">退出登录</a>
+				</li>
+			</ul>
+
+		</div>
+
+		<!--		<nav class="footmenu">
+			<a _href="price.html" _id="price">
+				<span class="mui-icon mui-icon-extra mui-icon-extra-calc"></span>
+				<span class="mui-tab-label">价格</span>
+			</a>
+			<a _href="buy.html" _id="buy">
+				<span class="mui-icon mui-icon-extra mui-icon-extra-gold"></span>
+				<span class="mui-tab-label">兑换</span>
+			</a>
+			<a _href="accountlist.html" _id="accountlist">
+				<span class="mui-icon mui-icon-extra mui-icon-extra-prech"></span>
+				<span class="mui-tab-label">钱包</span>
+			</a>
+			<a _href="setting.html" _id="setting" class="active">
+				<span class="mui-icon mui-icon-extra mui-icon-extra-dictionary"></span>
+				<span class="mui-tab-label">设置</span>
+			</a>
+		</nav>-->
+
+		<script src="libs/bower_components/stellar-sdk/stellar-sdk.js"></script>
+		<script src="js/gateways.js"></script>
+		<script src="js/jquery.js"></script>
+		<script src="js/template-web.js"></script>
+		<script src="js/mui.min.js"></script>
+		<script src="js/function.js"></script>
+		<script src="js/mui.enterfocus.js"></script>
+		<script src="js/sjcl.js"></script>
+		<script src="js/update.js"></script>
+		<script src="js/hx.js"></script>
+		<script>
+			mui.plusReady(function() {
+				//$.checkuser();
+				var ss = $.getsourcePublicKey();
+				$('#publickey').val(ss);
+				$('#version').html(apkVer);
+
+				checkUpdate();
+
+				var nw = plus.webview.currentWebview();
+				nw.addEventListener('show', function(e) {
+					//console.log('Webview Showed');
+					checkUpdate();
+				}, false);
+				nw.addEventListener('hide', function(e) {
+					//console.log('Webview Hided');
+				}, false);
+
+				$("body").on("tap", ".updatetip", function() {
+					downApk(updatedomain + newversion + ".apk");
+				})
+
+				/*$("body").on("tap","#checkupdate",function(){
+					
+					
+				});*/
+				//$("#skey").val($.getsecretonekey());
+
+				/*document.querySelector('#relogin').addEventListener('tap', function() {
+					clearStateAndToLogin();
+				});
+				
+				function clearStateAndToLogin(){
+					
+					mui.openWindow({
+						url: 'login.html',
+						id: 'login'
+					});
+				}*/
+
+			});
+		</script>
+	</body>
+
+</html>

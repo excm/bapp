@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html class="ui-page-accountlist">
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="css/icons-extra.css" />
+		<link href="css/hx.css" rel="stylesheet" />
+		<style>
+			.mui-content-padded {
+				margin-top: 25px;
+			}
+			
+			.buycontent {
+				margin-left: 5px;
+				margin-right: 5px;
+			}
+			
+			.pay-content {
+				margin: 15px 5px 51px;
+			}
+			
+			.pay-content.show {
+				display: block;
+			}
+			
+			h3.th {
+				padding: 15px 15px;
+				font-size: 18px;
+				text-align: center;
+				background: #fff;
+				margin: 0;
+				position: relative;
+			}
+			
+			h3.th span:nth-child(1):before {
+				content: "";
+				display: block;
+				width: 1px;
+				height: 20px;
+				background: #ccc;
+				float: right;
+				margin-top: 5px;
+			}
+			
+			h3.th:after {
+				content: "";
+				display: block;
+				clear: both;
+			}
+			
+			h3.th span {
+				display: block;
+				float: left;
+				line-height: 25px;
+			}
+			
+			h3.th span:nth-child(1) {
+				width: 70%;
+			}
+			
+			h3.th span:nth-child(2) {
+				width: 30%;
+			}
+			
+			.th~ul li {
+				display: flex;
+				padding-right: 55px;
+			}
+			
+			.th~ul li .zc {
+				width: 50%;
+				float: left;
+			}
+			
+			.pay-content .th~ul li input[type=checkbox],
+			.pay-content .th~ul li input[type=radio] {
+				top: 16px;
+			}
+			
+			.th~ul li .price {
+				width: 50%;
+				float: right;
+				text-align: center;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				margin-right: -10px;
+				flex-direction: column;
+			}
+			
+			.th~ul li .zc p {
+				font-size: 10px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				display: -webkit-box;
+				-webkit-box-orient: vertical;
+				-webkit-line-clamp: 2;
+			}
+			
+			.th~ul li .zc i {
+				font-style: normal;
+				font-size: 13px;
+			}
+			
+			.addasset {
+				text-align: center;
+				margin-bottom: 51px;
+			}
+			
+			.addasset .mui-btn {
+				margin: 0 auto;
+				padding: 15px 25px;
+			}
+			
+			.pay-foot {
+				text-align: right;
+				background: #fff;
+			}
+			
+			.mui-switch {
+				touch-action: none;
+			}
+			
+			.searchdiv {
+				text-align: center;
+				padding: 15px;
+			}
+			
+			.offerdiv {
+				text-align: center;
+				padding: 25px 0;
+			}
+			
+			#search-price-btn {}
+			
+			.linodata {
+				padding: 15px;
+				text-align: center;
+			}
+			
+			.inputwaiting {
+				background: url(images/waiting-small.svg);
+				background-size: 30px 30px;
+				background-repeat: no-repeat;
+				background-position: 0 5px;
+			}
+			
+			.inputwaiting {
+				color: transparent;
+			}
+		</style>
+
+	</head>
+
+	<body>
+
+		<div id="app">
+
+			<div class="mui-input-group buycontent">
+
+				<div class="mui-input-row">
+					<label>购买币种</label>
+					<select id="targetprice" :class="{inputwaiting:iaccount.length<1}" v-model="selecttargetprice">
+						<option value="0">请选择购买币种</option>
+						<option :value="item.code+','+item.issuer" v-for="item in iaccount">{{item.code}} <span> ({{item.website}})</option>
+					</select>
+				</div>
+				
+				<div class="mui-input-row">
+					<label>购买数量</label>
+					<input type="text" placeholder="请输入数字" id="buynum" v-model="buynum">
+				</div>
+
+				<div class="searchdiv">
+					<button class="mui-btn submitbtn" @tap="searchprice()">价格查询</button>
+				</div>
+
+			</div>
+
+			<div class="pay-content" v-if="payablelist.length>0">
+				<h5 class="th">支付币种：</h5>
+				<ul class="mui-table-view mui-input-group" id="pricelist" @tap="changepayment">
+					<li class="mui-table-view-cell mui-radio" v-for="(item,index) in payablelist" >
+						<input name="radio1" type="radio" :value="item" v-model="selectedpayment">
+									<div class="zc">
+										<img class="mui-media-object mui-pull-left" :src="item.image">
+										<div class="mui-media-body">
+											{{item.source_asset_code}} <i></i>
+											<p>{{item.website}}</p>
+										</div>
+									</div>
+									<div class="price">
+										<p class="bag">余额：{{item.balance}}</p>
+										<span class="pay_price">支付  <span class="red">{{item.source_amount}}</span></span>
+				</div>
+
+				</li>
+				</ul>
+
+				<div class="pay-foot" id="pay-foot">
+					<div style="padding: 15px;">
+						<div>
+							<p>合计：购买 <span class="red">{{buynum}}</span> {{selectasset.code}}</p>
+							<p>支付 约 <span class="red">{{selectedpayment.source_amount}}</span> {{selectedpayment.code}}</p>
+						</div>
+						<div class="buybtn">
+							<a class="mui-btn submitbtn" id="submitprice" @tap="submitbuy">提交</a>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="offerdiv">
+				<a _href="offer.html" class="mui-btn" id="offerbtn" data-keepfooter="true">委托兑换</a>
+			</div>
+
+		</div>
+
+		<div class="waiting"><span><img src="images/waiting2.gif" alt="正在载入" />正在载入...</span></div>
+
+		<!--			<script id="priceTemplate" type="text/x-jquery-tmpl">
+				<li class="mui-table-view-cell mui-radio">
+					<input name="radio1" type="radio">
+					<div class="zc" id="{{if type==" native "}}native{{else}}{{code}}-{{source_asset_issuer}}{{/if}}" data-type="{{type}}" data-code="{{code}}" data-source_asset_issuer="{{source_asset_issuer}}">
+						<img class="mui-media-object mui-pull-left" src="{{image}}">
+						<div class="mui-media-body">
+							{{code}} <i></i>
+							<p>{{website}}</p>
+						</div>
+					</div>
+					<div class="price">
+						<p class="bag">余额：{{balance}}</p>
+						<span class="pay_price">支付  <span class="red">{{source_amount}}</span></span>
+					</div>
+
+				</li>
+			</script>
+
+		<script id="payfootTemplate" type="text/x-jquery-tmpl">
+			<div style="padding: 15px;">
+				<div>
+					<p>合计：购买 <span class="red">{{destination_amount}}</span> {{destination_asset_code}}</p>
+					<p>支付 约 <span class="red">{{source_amount}}</span> {{code}}</p>
+				</div>
+				<div class="buybtn">
+					<a class="mui-btn submitbtn" id="submitprice">提交</a>
+				</div>
+			</div>
+		</script>-->
+
+		<script src="libs/bower_components/stellar-sdk/stellar-sdk.js"></script>
+		<script src="js/gateways.js"></script>
+		<script src="js/jquery.js"></script>
+		<script src="js/template-web.js"></script>
+		<script src="js/mui.min.js"></script>
+		<script src="js/function.js"></script>
+		<script src="js/mui.enterfocus.js"></script>
+		<script src="js/app.js"></script>
+		<script src="js/sjcl.js"></script>
+		<script src="js/vue.js"></script>
+		<script src="js/hx.js"></script>
+		<script>
+			StellarSdk.Network.usePublicNetwork();
+
+			mui.plusReady(function() {
+
+				var vm = new Vue({
+					el: '#app',
+					data: {
+						iaccount: '',
+						selecttargetprice: "0",
+						selectasset: "",
+						buynum: '',
+						payablepath: "",
+						payablelist: [],
+						selectedpayment: ""
+					},
+					created: function() {
+						var ts = this;
+						$.iaccount.getbalance()
+							.then(function(x) {
+								ts.iaccount = x;
+							})
+					},
+					methods: {
+						searchprice: function() {
+							var ts = this;
+							if(ts.selecttargetprice == "0") {
+								plus.nativeUI.alert("请选择要兑换的货币"); 
+								return false;
+							}
+							if(ts.buynum == "" || isNaN(ts.buynum)) {
+								//mui.alert('', '请输入要兑换的数量', function() {
+									//return false;
+								//});
+								plus.nativeUI.alert("请输入购买数量"); 
+								return false;
+							}
+							
+							$("#buynum").blur();
+							$("body").addClass("lock");
+							ts.payablepath = "";
+							var targetprice = ts.selecttargetprice.split(",");
+
+							ts.selectasset = targetprice[0] == "XLN" ? new StellarSdk.Asset.native() : new StellarSdk.Asset(targetprice[0], targetprice[1]);
+							$.iaccount.server.paths($.getsourcePublicKey(), $.getsourcePublicKey(), ts.selectasset, ts.buynum) //获取所有支付方法
+								.call()
+								.then(function(resp) {
+									//console.log(JSON.stringify(resp));
+									$("body").removeClass("lock");
+									ts.payablepath = resp.records;
+									ts.payablelist = [];
+									showpayablelist();
+									
+								})
+								.catch(function(err) {
+									console.error(err);
+								})
+						},
+						changepayment: function() {
+							//setTimeout(console.log(JSON.stringify(this.selectedpayment)),200);
+							//console.log(JSON.stringify(this.selectedpayment));
+						},
+						submitbuy: function() {
+							var btnArray = ['否', '是'];
+							mui.confirm('确定提交本订单？', '提示', btnArray, function(e) {
+								if(e.index == 1) {
+									dosubmit();
+								} else {
+
+								}
+							})
+						}
+					}
+				});
+
+				function showpayablelist() {
+					$.each(vm.iaccount, function(index, value) {
+						if(value.balance > 0 && value.code != vm.selectasset.code) { //余额不为0的资产才参与计算,与目标货币相同的货币不参与计算
+							var _arr = {};
+							$.each(vm.payablepath, function(i, v) {
+
+								if((value.type == "native" && v.source_asset_type == "native") || (value.code == v.source_asset_code && value.issuer == v.source_asset_issuer)) {
+
+									/*source_amount:支付货币数量*/
+									if(!_arr.source_amount || parseFloat(_arr.source_amount) > parseFloat(v.source_amount)) {
+										//trustlist.data[index].source_amount = v.source_amount;
+										_arr = $.extend({}, value, v);
+									}
+
+								}
+
+							});
+
+							if(JSON.stringify(_arr) != "{}") {
+								if(parseFloat(_arr.balance) > parseFloat(_arr.source_amount)) { //余额必须大于需支付的金额
+									vm.payablelist.push(_arr);
+									//console.log(JSON.stringify(_arr));
+								}
+
+							}
+
+						}
+					});
+				};
+
+				function dosubmit() {
+					console.log("正在提交...");
+					$("body").addClass("lock");
+
+					var sendasset = vm.selectedpayment.type == "native" ? new StellarSdk.Asset.native() : new StellarSdk.Asset(vm.selectedpayment.code, vm.selectedpayment.issuer); //货币构造（币种，公钥）
+					var destasset = vm.selectasset;
+					var ipath = [];
+					if(vm.selectedpayment.path.length > 0) {
+						for(var i in vm.selectedpayment.path) { //_obj_path不能直接使用，要Asset一下！！！
+							var ccc = vm.selectedpayment.path[i].asset_type == "native" ? new StellarSdk.Asset.native() : new StellarSdk.Asset(vm.selectedpayment.path[i].asset_code, vm.selectedpayment.path[i].asset_issuer);
+							ipath.push(ccc);
+						}
+					}
+					sendmax = (parseFloat(vm.selectedpayment.source_amount) * 1.05).toFixed(7).toString();
+					//console.log(sendmax);
+
+					var op = StellarSdk.Operation.pathPayment({
+						sendAsset: sendasset, //出售的货币
+						sendMax: sendmax, //出售的最大数量
+						destination: $.getsourcePublicKey(), //自已公钥
+						destAsset: destasset, //购买的货币
+						destAmount: vm.selectedpayment.destination_amount, //购买数量
+						path: ipath //路径									
+					});
+					//console.log(JSON.stringify(sendasset));
+					
+					StellarSdk.Network.usePublicNetwork();
+					$.iaccount.server.loadAccount($.getsourcePublicKey()) //请求返回资产
+						.catch(function(e) {
+							//console.log(JSON.stringify(e));
+							console.error(e);
+						})
+						.then(function(account) {
+							
+							donext(account);
+							
+						})
+
+					function donext(iaccount) {
+						var tx = new StellarSdk.TransactionBuilder(iaccount).addOperation(op).build();
+
+						secretonekey = $.getsecretonekey();
+						tx.sign(StellarSdk.Keypair.fromSecret(secretonekey));
+						//console.log(tx);
+
+						$.iaccount.server.submitTransaction(tx)
+							.then(function(txResult) {
+								$("body").removeClass("lock");
+								mui.alert('兑换成功', function() {
+									//location.reload();
+								});
+							})
+							.catch(function(e) {
+
+								console.error(e);
+								$("body").removeClass("lock");
+								mui.alert('兑换失败，请稍后重试', '出错啦~~', function() {
+
+								});
+
+							});
+
+					}
+				}
+
+
+/*				function finddata(_obj, code, issuer, type) { //根据币种和公钥返回对应的数据
+					var returnobj = {};
+					$.each(_obj, function(incex, value) {
+						if((value.type == type && value.type == "native") || (value.code == code && value.source_asset_issuer == issuer)) {
+							returnobj = value;
+							return false;
+						}
+					});
+					return returnobj;
+				}*/
+
+			});
+		</script>
+	</body>
+
+</html>

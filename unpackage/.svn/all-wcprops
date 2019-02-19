@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/bitbox/!svn/ver/3/bitbox/unpackage
+END
+.dependencies
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/bitbox/!svn/ver/3/bitbox/unpackage/.dependencies
+END
+.confirmed_dependencies
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/bitbox/!svn/ver/10/bitbox/unpackage/.confirmed_dependencies
+END

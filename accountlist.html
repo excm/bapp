@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html class="ui-page-accountlist">
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="css/icons-extra.css" />
+		<link href="css/hx.css" rel="stylesheet" />
+		<style>
+			.mui-content-padded {
+				margin-top: 25px;
+			}
+			/*			.first-card {
+				margin-top: 55px;
+			}*/
+			
+			.first-card{
+				background: #007aff; color: #fff;
+			}
+			
+			.first-card p {
+				margin-bottom: 0;
+				margin-top: 0px;
+				margin-left: -5px;
+				text-align: center;
+				color: #fff;
+			}
+			
+			.first-card h4 {
+				text-align: center;
+				font-weight: normal;
+			}
+			
+			.btnlist {
+				margin: 0 7px;
+			}
+			
+			.btnlist ul {
+				display: flex;
+				padding: 0;
+				margin: 0;
+			}
+			
+			.btnlist ul li {
+				list-style-type: none;
+				flex: 1;
+				padding: 0 3px;
+			}
+			
+			.btnlist ul li .mui-btn {
+				width: 100%;
+			}
+			
+			.mui-bar-nav~.mui-content.listtitle {
+				padding-top: 10px;
+			}
+			
+			h3.th {
+				padding: 10px 15px;
+				font-size: 16px;
+				text-align: center;
+				background: #fff;
+				margin: 0;
+				position: relative;
+			}
+			
+			h3.th span:nth-child(1):before {
+				content: "";
+				display: block;
+				width: 1px;
+				height: 20px;
+				background: #ccc;
+				float: right;
+				margin-top: 5px;
+			}
+			
+			h3.th:after {
+				content: "";
+				display: block;
+				clear: both;
+			}
+			
+			h3.th span {
+				display: block;
+				float: left;
+				line-height: 25px;
+			}
+			
+			h3.th span:nth-child(1) {
+				width: 70%;
+			}
+			
+			h3.th span:nth-child(2) {
+				width: 30%;
+			}
+			
+			.th~ul li {
+				display: flex;
+			}
+			
+			.th~ul li .zc {
+				width: 70%;
+				float: left;
+			}
+			
+			.th~ul li .price {
+				width: 30%;
+				float: right;
+				text-align: center;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				margin-right: -10px;
+			}
+			
+			.th~ul li .zc p {
+				font-size: 10px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				display: -webkit-box;
+				-webkit-box-orient: vertical;
+				-webkit-line-clamp: 2;
+			}
+			
+			.th~ul li .zc i {
+				font-style: normal;
+				font-size: 13px;
+			}
+			
+			.addasset {
+				text-align: center;
+				margin-bottom: 51px;
+			}
+			
+			.addasset .mui-btn {
+				margin: 0 auto;
+				padding: 15px 25px;
+			}
+			
+			.mui-switch {
+				touch-action: none;
+			}
+		</style>
+
+	</head>
+
+	<body>
+		<!--		<header class="mui-bar mui-bar-nav">
+			<button class="mui-btn mui-btn-blue mui-btn-link mui-pull-right reload">刷新</button>
+			<h1 class="mui-title">bitbox.one 我的钱包</h1>
+		</header>-->
+
+		<div id="app" v-cloak>
+			<div class="mui-card first-card">
+				<div class="mui-card-content">
+					<div class="mui-card-content-inner">
+						<p>资产估值</p>
+						<h4><span class="redx" id="XLM"> {{XLMbalance}} </span> XLM</h4>
+						<h4> ≈ <span class="redx" id="BCN"> {{BCNbalance}} </span> BCNY</h4>
+					</div>
+				</div>
+			</div>
+
+			<div class="btnlist">
+				<ul>
+					<li>
+						<a class="mui-btn mui-btn-primary" _href="recharge.html">充值</a>
+					</li>
+					<li>
+						<button class="mui-btn mui-btn-primary">提现</button>
+					</li>
+					<li>
+						<a _href="accounttransfer.html" class="mui-btn mui-btn-primary">转帐</a>
+					</li>
+					<li>
+						<a _href="effects.html" class="mui-btn mui-btn-primary">帐单</a>
+					</li>
+				</ul>
+			</div>
+
+			<div class="mui-content listtitle">
+				<h3 class="th"><span>资产</span><span>余额</span></h3>
+				<ul class="mui-table-view" id="pricelist">
+					<li class="mui-table-view-cell" v-for="item in alldata">
+						<div class="zc">
+							<img class="mui-media-object mui-pull-left" :src="item.image">
+							<div class="mui-media-body">
+								{{item.code}} <i>{{item.website}}</i>
+								<p>{{item.issuer}}</p>
+							</div>
+						</div>
+						<div class="price">{{item.balance}}</div>
+					</li>
+
+				</ul>
+			</div>
+
+		</div>
+		<div class="waiting"><span><img src="images/waiting2.gif" alt="正在载入" />正在载入...</span></div>
+		<!--		<nav class="footmenu">
+			<a _id="price" _href="price.html">
+				<span class="mui-icon mui-icon-extra mui-icon-extra-calc"></span>
+				<span class="mui-tab-label">价格</span>
+			</a>
+			<a _href="buy.html" _id="buy">
+				<span class="mui-icon mui-icon-extra mui-icon-extra-gold"></span>
+				<span class="mui-tab-label">兑换</span>
+			</a>
+			<a _href="accountlist.html" _id="accountlist" class="active">
+				<span class="mui-icon mui-icon-extra mui-icon-extra-prech"></span>
+				<span class="mui-tab-label">钱包</span>
+			</a>
+			<a _href="setting.html" _id="setting">
+				<span class="mui-icon mui-icon-extra mui-icon-extra-dictionary"></span>
+				<span class="mui-tab-label">设置</span>
+			</a>
+		</nav>-->
+
+		<!--		<script id="priceTemplate" type="text/x-jquery-tmpl">
+			<li class="mui-table-view-cell">
+				<div class="zc">
+					<img class="mui-media-object mui-pull-left" src="{{image}}">
+					<div class="mui-media-body">
+						{{code}} <i>{{website}}</i>
+						<p>{{issuer}}</p>
+					</div>
+				</div>
+				<div class="price">{{balance}}</div>
+			</li>
+		</script>-->
+
+		<script src="libs/bower_components/stellar-sdk/stellar-sdk.js"></script>
+		<script src="js/gateways.js"></script>
+		<script src="js/jquery.js"></script>
+		<script src="js/template-web.js"></script>
+		<script src="js/mui.min.js"></script>
+		<script src="js/function.js"></script>
+		<script src="js/mui.enterfocus.js"></script>
+		<script src="js/sjcl.js"></script>
+		<script src="js/vue.js"></script>
+		<script src="js/hx.js"></script>
+		<script>
+			var timer;
+			mui.plusReady(function() {
+
+				//var nw = plus.webview.currentWebview();				
+				window.addEventListener('startInterval', function(e) {
+					vm.getdata();
+					clearInterval(timer);
+					timer = setInterval(vm.getdata, 9000);
+					//console.log('Webview startInterval');
+				}, false);
+				
+				window.addEventListener('endInterval', function(e) {
+					clearInterval(timer);
+					//console.log('Webview endInterval');
+				}, false);
+
+				var vm = new Vue({
+					el: '#app',
+					data: {
+						alldata: {},
+						getindex: 1, //第几次获取数据
+						//XLMbalance: 0,
+						//BCNbalance: 0,
+						BCNYprice: 0
+					},
+					created: function() {
+
+						var ts = this;
+						//console.log(JSON.stringify($.iaccount.pricelist.getall()));
+						$("body").addClass("lock");
+						ts.getdata(true);//第一次获取时为true
+						timer = setInterval(this.getdata, 9000);
+					},
+					methods: {
+						getdata: function(numfirst) {
+							//if($.timecheck()) return true;//加入时间间隔防止webview show有时会重复触发多次
+							console.log("尝试获取数据...");
+							var ts = this;
+							$.when($.iaccount.getbalance()).then(function(balancelist) {
+									$("body").removeClass("lock");
+									
+									var _arr = [];
+									$.each(balancelist, function(index, value) {
+										var _obj = value;
+										if(numfirst == true && !value.price) { //第一次默认为0，后面读取旧数据，再ajax更新数据防止跳动
+											_obj.price = 0;
+										}else if(value.code == "XLM"){
+											_obj.price = "1.0000000";
+										}else {
+											try { //这里用try，因为增加或删除资产后造成index改变，先让它为0等待ajax回传的price
+												_obj.price = ts.alldata[index].price;
+											} catch(e) {
+												_obj.price = 0;
+											}
+										}
+										_arr.push(value);
+
+										if(value.code == "XLM") return true;
+										$.iaccount.getprice(value.code, value.issuer).then(function(x) {
+											//console.log(JSON.stringify(x));
+											ts.$set(ts.alldata[index], 'price', x);
+										});
+									});
+									
+									ts.alldata = _arr;
+								})
+								.catch(function(e) {
+									$("body").removeClass("lock");
+									console.log(JSON.stringify(e));
+								})
+						}
+					},
+					computed: {
+						XLMbalance: function() {
+							var _balance = 0;
+							var BCNYprice = 0;
+							var ts = this;
+							//console.log(JSON.stringify(this.alldata));
+							$.each(this.alldata, function(i, v) {
+								if(v.price && parseFloat(v.balance.toString()) > 0 && parseFloat(v.price.toString()) > 0) {
+									_balance += parseFloat(v.balance.toString()) / parseFloat(v.price.toString());
+								}
+								if(v.code == "BCNY") ts.BCNYprice = parseFloat(v.price);
+								//console.log(ts.BCNYprice);
+							});
+							return _balance.toFixed(5);
+						},
+						BCNbalance: function() {
+							var _balance = 0;
+							var ts = this;
+							if(ts.BCNYprice > 0) {
+								_balance = (ts.XLMbalance * ts.BCNYprice).toFixed(5);
+								//console.log(ts.XLMbalance);
+							} else {
+								_balance = " -- ";
+							}
+							return _balance;
+						}
+					}
+				})
+				
+				$("body").on('tap','#recharge',function(){
+					mui.alert("000");
+				})
+				
+				
+
+			});
+		</script>
+	</body>
+
+</html>

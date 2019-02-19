@@ -1,0 +1,163 @@
+/*这是自定义总的css*/
+
+.ui-page-login,
+body {
+	width: 100%;
+	height: 100%;
+	margin: 0px;
+	padding: 0px;
+}
+
+.mui-content {
+	height: 100%;
+}
+
+.red {
+	color: #CF2D28;
+}
+
+
+/*公用*/
+
+.submitbtn {
+	width: 50vw;
+	height: auto;
+	padding: 8px;
+	background: #007aff;
+	border: 1px solid #007aff;
+	color: #fff;
+	font-size: 18px;
+}
+
+.red {
+	color: #CF2D28;
+}
+
+.waiting {
+	position: fixed;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	/*background: rgba(255, 255, 255, .3);*/
+	z-index: 999;
+	justify-content: center;
+	align-items: center;
+	display: none;
+}
+.waiting:after{
+	content: "";
+	display: block;
+	position: absolute;
+	left: 0;
+	top: 0;
+	width:100%; height: 100%;
+	background: rgba(255, 255, 255, .6);
+	z-index: 1;
+}
+
+.waiting span {
+	width: 120px;
+	height: 180px;
+	text-align: center;
+	position: relative;
+	z-index: 5;
+}
+
+.waiting span img {
+	width: 120px;
+	height: 120px;
+	display: block;
+	margin-bottom: 15px;
+}
+
+.subwaiting{/*/区域waiting*/
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	/*background: rgba(255, 255, 255, .3);*/
+	z-index: 999;
+	justify-content: center;
+	align-items: center;
+	display: none;
+}
+.subwaiting span {
+	
+	max-width: 120px;
+	max-height: 180px;
+	text-align: center;
+	position: relative;
+	z-index: 5;
+}
+.subwaiting span img {
+	width: 90%;
+	height: auto;
+	max-width: 120px;
+	max-height: 120px;
+	display: block;
+	margin-bottom: 15px;
+}
+.sublock .subwaiting {
+	display: flex;
+}
+
+[v-cloak]{
+	display: none;
+}
+.lock .waiting,[v-cloak]~.waiting,[v-cloak]~.subwaiting {
+	display: flex;
+}
+
+
+/*keypair*/
+
+.keypair {}
+
+.keypair h5 {
+	padding-bottom: 15px;
+}
+
+.textarea {
+	height: 90px;
+}
+
+.keypair .keypairbtn {
+	display: flex;
+	justify-content: space-around;
+}
+
+
+/*footmenu*/
+
+.footmenu {
+	position: fixed;
+	height: 50px;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	box-shadow: 0 0 1px rgba(0, 0, 0, .85);
+	background: #f7f7f7;
+	display: flex;
+}
+
+.footmenu a {
+	flex: 1;
+	text-align: center;
+	color: #929292;
+	font-size: 12px;
+}
+
+.footmenu a.active {
+	color: #007aff;
+}
+
+.footmenu a span {
+	display: block;
+}
+
+.footmenu a .mui-icon {
+	font-size: 24px;
+	margin-top: 5px;
+}

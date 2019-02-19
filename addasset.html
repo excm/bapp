@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html class="ui-page-accountlist">
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="css/icons-extra.css" />
+		<link href="css/hx.css" rel="stylesheet" />
+		<style>
+			.mui-content-padded {
+				margin: 25px 10px;
+			}
+			
+			.listcontent {
+				margin: 0 0 25px
+			}
+			
+			h3.th {
+				padding: 15px 15px;
+				font-size: 18px;
+				text-align: center;
+				background: #fff;
+				margin: 0;
+				position: relative;
+			}
+			
+			h3.th span:nth-child(1):before {
+				content: "";
+				display: block;
+				width: 1px;
+				height: 20px;
+				background: #ccc;
+				float: right;
+				margin-top: 5px;
+			}
+			
+			h3.th:after {
+				content: "";
+				display: block;
+				clear: both;
+			}
+			
+			h3.th span {
+				display: block;
+				float: left;
+				line-height: 25px;
+			}
+			
+			h3.th span:nth-child(1) {
+				width: 70%;
+			}
+			
+			h3.th span:nth-child(2) {
+				width: 30%;
+			}
+			
+			.th~ul li {
+				display: flex;
+				padding-right: 0;
+			}
+			
+			.th~ul li .zc {
+				width: 70%;
+				float: left;
+			}
+			
+			.th~ul li .price {
+				width: 30%;
+				float: right;
+				text-align: center;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				margin-right: -10px;
+			}
+			
+			.th~ul li .zc p {
+				font-size: 10px;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				display: -webkit-box;
+				-webkit-box-orient: vertical;
+				-webkit-line-clamp: 2;
+			}
+			
+			.th~ul li .zc i {
+				font-style: normal;
+				font-size: 13px;
+			}
+			
+			.asset-search {
+				display: flex;
+			}
+			
+			.asset-search>.mui-input {
+				flex: 1;
+				padding: 0 15px;
+				-webkit-user-select: auto;
+			}
+			
+			.asset-search>.mui-btn {
+				margin-left: 5px;
+			}
+		</style>
+
+	</head>
+
+	<body>
+
+		<div id="app" v-cloak>
+
+			<header class="mui-bar mui-bar-nav">
+				<!--<a class="mui-icon mui-icon-left-nav mui-pull-left" _href="price.html"></a>-->
+				<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+				<button class="mui-btn mui-btn-blue mui-btn-link mui-pull-right reload">刷新</button>
+				<h1 class="mui-title">添加资产</h1>
+			</header>
+
+			<div class="mui-content">
+				<div class="mui-content-padded">
+					<div class="mui-input-row asset-search">
+						<input type="input" class="mui-input" id="input-domain" placeholder="example:xxxx.com">
+						<button class="mui-btn" id="search-asset-btn"><i></i>搜索</button>
+					</div>
+				</div>
+			</div>
+
+			<div class="mui-content-padded listcontent" id="listcontent">
+				<span class="th"></span>
+				<ul class="mui-table-view" id="pricelist">
+					<li class="mui-table-view-cell" v-for="(item,index) in alldata">
+						<div class="zc">
+							<img class="mui-media-object mui-pull-left" :src="item.image">
+							<div class="mui-media-body">
+								<span class="code">{{item.code}}</span> <i class="website">{{item.website}}</i>
+								<p class="issuer">{{item.issuer}}</p>
+							</div>
+						</div>
+						<div class="price">
+							<div class="mui-switch mui-switch-mini" :data-switch="index" :class="{'mui-disabled':item.balance>0, 'mui-active':item.isactive=='1'}" @tap='changestruck(item.code,item.issuer,item,index)'>
+								<div class="mui-switch-handle"></div>
+							</div>
+						</div>
+					</li>
+				</ul>
+
+			</div>
+		</div>
+
+		<div class="waiting"><span><img src="images/waiting2.gif" alt="正在载入" />正在载入...</span></div>
+
+		<!--		<script id="priceTemplate" type="text/x-jquery-tmpl">
+			<li class="mui-table-view-cell">
+				<div class="zc">
+					<img class="mui-media-object mui-pull-left" src="{{image}}">
+					<div class="mui-media-body">
+						<span class="code">{{code}}</span> <i class="website">{{website}}</i>
+						<p class="issuer">{{issuer}}</p>
+					</div>
+				</div>
+				<div class="price">
+					<div class="mui-switch mui-switch-mini{{if balance>0}} mui-disabled{{/if}}" data-switch="{{index}}">
+						<div class="mui-switch-handle"></div>
+					</div>
+				</div>
+			</li>
+		</script>-->
+
+		<script src="libs/bower_components/stellar-sdk/stellar-sdk.js"></script>
+		<script src="libs/toml.min.js"></script>
+		<script src="js/gateways.js"></script>
+		<script src="js/jquery.js"></script>
+		<script src="js/template-web.js"></script>
+		<script src="js/mui.min.js"></script>
+		<script src="js/function.js"></script>
+		<script src="js/mui.enterfocus.js"></script>
+		<script src="js/toml-js.js"></script>
+		<script src="js/sjcl.js"></script>
+		<script src="js/vue.js"></script>
+		<script src="js/hx.js"></script>
+
+		<script>
+			mui.plusReady(function() {
+
+				var vm = new Vue({
+					el: '#app',
+					data: {
+						alldata: [],
+						searchdata: [],
+						getindex: 1 //第几次获取数据
+
+					},
+					created: function() {
+						var ts = this;
+						$("body").addClass("lock");
+						ts.getdata();
+					},
+					methods: {
+						getdata: function() {
+							var ts = this;
+							$.when($.iaccount.getbalance())
+								.then(function(x) {
+									ts.alldata = x;
+
+									///添加默认货币
+									var delnum = [];
+									$.each($.defaultpricelist, function(index, value) {
+										$.each(x, function(i, v) {
+											if(!!v && !!value && v.code == value.code && v.issuer == value.issuer) {
+												delnum.push(index);
+											}
+										});
+									});
+
+									for(var i = delnum.length - 1; i >= 0; i--) {
+										$.defaultpricelist.splice(delnum[i], 1);
+									}
+
+									if($.defaultpricelist.length > 0) {
+										ts.alldata.unshift($.defaultpricelist);
+									}
+
+									$.each(ts.alldata, function(index, value) {
+										!ts.alldata[index].isactive ? ts.alldata[index].isactive = "1" : ts.alldata[index].isactive = "-1";
+									});
+
+									$("body").removeClass("lock");
+								})
+								.catch(function(e){
+									console.log(JSON.stringify(e));
+								})
+						},
+						changestruck: function(code, issuer, item, index) {
+							
+							if(item.balance > 0) return true;
+							if($.timecheck()) return true;
+
+							var ts = this;
+							var ks = ts.alldata[index].isactive == '1' ? '-1' : '1';
+							item.isactive = ks;
+							Vue.set(ts.alldata, index, item);
+							//console.log(JSON.stringify(ts.alldata[index]));
+							
+							$("body").addClass("lock");
+							StellarSdk.Network.usePublicNetwork();
+							$.iaccount.getaccount().then(function(account) {
+
+								var asset = new StellarSdk.Asset(item.code, item.issuer);
+								var ilimit = (ks == '1') ? '1000000' : '0';
+
+								var _obj_change = {
+									asset: asset,
+									limit: ilimit
+								};
+
+								var op = StellarSdk.Operation.changeTrust(_obj_change);
+
+								var tx = new StellarSdk.TransactionBuilder(account).addOperation(op).build();
+
+								var secretonekey = $.getsecretonekey();						
+								tx.sign(StellarSdk.Keypair.fromSecret(secretonekey));
+
+								console.log("正在提交...");
+								
+								$.iaccount.server.submitTransaction(tx)
+									.then(function(result) {
+										$("body").removeClass("lock");
+										mui.toast('更改成功！');
+										//console.log(result);
+									})
+									.catch(function(e) {
+										$("body").removeClass("lock");
+										mui.toast('更改失败，请稍后重试！');
+										console.log(JSON.stringify(e));
+										item.isactive = (-parseInt(ks)).toString();
+										Vue.set(ts.alldata, index, item);
+									});
+							});
+						}
+					}
+				})
+			
+			
+
+			$("body").on("tap", "#search-asset-btn", function() { //搜索
+				$('#searchlist').html('');
+				console.log($("#input-domain").val());
+				var inputdomain = $("#input-domain").val();
+				inputdomain = inputdomain.replace("www.", "");
+				var posturl = "https://" + inputdomain + "/.well-known/stellar.toml"
+
+				var obj_result = {};
+				obj_result.data = [];
+
+				$.get(posturl, function(result) { //解析toml文件
+					var tomlrs;
+					try {
+						tomlrs = toml.parse(result);
+					} catch(e) {
+
+					}
+
+					tomlbind(tomlrs.CURRENCIES); //解析完执行
+				});
+
+				function tomlbind(obj_result) {
+					$.each(obj_result, function(index, value) {
+
+						putin = true;
+						$.each(vm.alldata, function(i, v) {
+							if(v.code == value.code && v.issuer == value.issuer) {
+								putin = false;
+							}
+						});
+
+						if(putin) {
+							vm.alldata.unshift(value);
+						}
+					});
+					//switchinit();
+				}
+			});
+			
+			});
+
+			mui.init({
+				beforeback: function() {　　　　 //获得父页面的webview  
+					/*if(!!plus){
+					var list = plus.webview.currentWebview().opener();//触发父页面的自定义事件(refresh),从而进行刷新  
+					mui.fire(list, 'refresh');
+					//返回true,继续页面关闭逻辑  
+					return true;
+					}*/
+				}
+			});
+		</script>
+	</body>
+
+</html>
